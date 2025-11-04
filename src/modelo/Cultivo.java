@@ -12,28 +12,22 @@ public class Cultivo {
     private int Id_cultivo;
     private String Nombre_especie;
     private String Variedad;
-    private double Area_siembra;
     private String Descripcion;         // opcional
-    private String Estado_fenologico;
 
     public Cultivo() {
     }
 
     // Constructor completo (incluye Descripcion)
-    public Cultivo(int Id_cultivo, String Nombre_especie, String Variedad,
-                   double Area_siembra, String Descripcion, String Estado_fenologico) {
+    public Cultivo(int Id_cultivo, String Nombre_especie, String Variedad, String Descripcion) {
         this.Id_cultivo = Id_cultivo;
         this.Nombre_especie = Nombre_especie;
         this.Variedad = Variedad;
-        this.Area_siembra = Area_siembra;
         this.Descripcion = Descripcion; // puede ser null
-        this.Estado_fenologico = Estado_fenologico;
     }
 
     // Constructor SIN Descripcion (por ser opcional)
-    public Cultivo(int Id_cultivo, String Nombre_especie, String Variedad,
-                   double Area_siembra, String Estado_fenologico) {
-        this(Id_cultivo, Nombre_especie, Variedad, Area_siembra, null, Estado_fenologico);
+    public Cultivo(int Id_cultivo, String Nombre_especie, String Variedad) {
+        this(Id_cultivo, Nombre_especie, Variedad, null);
     }
 
     public int getId_cultivo() {
@@ -48,16 +42,8 @@ public class Cultivo {
         return Variedad;
     }
 
-    public double getArea_siembra() {
-        return Area_siembra;
-    }
-
     public String getDescripcion() {
         return Descripcion;
-    }
-
-    public String getEstado_fenologico() {
-        return Estado_fenologico;
     }
 
     public void setId_cultivo(int Id_cultivo) {
@@ -72,16 +58,8 @@ public class Cultivo {
         this.Variedad = Variedad;
     }
 
-    public void setArea_siembra(double Area_siembra) {
-        this.Area_siembra = Area_siembra;
-    }
-
     public void setDescripcion(String Descripcion) {
         this.Descripcion = Descripcion;
-    }
-
-    public void setEstado_fenologico(String Estado_fenologico) {
-        this.Estado_fenologico = Estado_fenologico;
     }
     
     public String[] split(String string) {

@@ -94,7 +94,7 @@ public class FuncionarioICADAO {
     // Listar todos los productos con el estado activo (READ - Lista completa)
     public List<FuncionarioICA> listarFuncionarios() {
         List<FuncionarioICA> lista = new ArrayList<>();
-        String sql = "SELECT * FROM FUNCIONARIO_ICA";
+        String sql = "SELECT * FROM FUNCIONARIO_ICA ORDER BY ID_FUNCIONARIO";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -181,5 +181,35 @@ public class FuncionarioICADAO {
             e.printStackTrace();
             return false;
         }
+    }
+    
+    public boolean existeFuncionarioActivo(int idFuncionario) {
+        String sql = "SELECT COUNT(*) FROM FUNCIONARIO_ICA WHERE ID_FUNCIONARIO = ? AND ESTADO = 'ACTIVO'";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setInt(1, idFuncionario);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0; // true si existe y está activo
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    public boolean existeFuncionario(int idFuncionario) {
+        String sql = "SELECT COUNT(*) FROM FUNCIONARIO_ICA WHERE ID_FUNCIONARIO = ?";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setInt(1, idFuncionario);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0; // true si existe y está activo
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

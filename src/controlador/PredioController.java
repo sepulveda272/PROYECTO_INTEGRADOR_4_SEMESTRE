@@ -25,6 +25,12 @@ public class PredioController {
                                  String nombrePropietario, String direccion,
                                  double coordenadasLat, double coordenadasLon, int idLugar, String estado) {
 
+        // Evitar duplicados por ID
+        if (predioDAO.existePredio(idPredio)) {
+            System.out.println("❌ Ya existe un predio con ID " + idPredio + ".");
+            return false;
+        }
+
         // ✅ Verificar si el lugar de producción existe y está activo
         if (!lugarProduccionDAO.existeLugarPro(idLugar)) {
             System.out.println("❌ El lugar de producción con ID " + idLugar + " no existe o no está activo.");
@@ -55,6 +61,11 @@ public class PredioController {
         }
 
         return resultado;
+    }
+    
+    // En PlagaController
+    public boolean existeIdPredio(int idPredio) {
+        return predioDAO.existePredio(idPredio);
     }
 
     /**

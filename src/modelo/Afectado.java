@@ -10,15 +10,15 @@ package modelo;
  */
 public class Afectado {
     private int Id_afectado;
-    private int Id_cultivo;
+    private int Id_lote;
     private int Id_plaga;
 
     public Afectado() {
     }
 
-    public Afectado(int Id_afectado, int Id_cultivo, int Id_plaga) {
+    public Afectado(int Id_afectado, int Id_lote, int Id_plaga) {
         this.Id_afectado = Id_afectado;
-        this.Id_cultivo = Id_cultivo;
+        this.Id_lote = Id_lote;
         this.Id_plaga = Id_plaga;
     }
 
@@ -26,8 +26,8 @@ public class Afectado {
         return Id_afectado;
     }
 
-    public int getId_cultivo() {
-        return Id_cultivo;
+    public int getId_lote() {
+        return Id_lote;
     }
 
     public int getId_plaga() {
@@ -38,8 +38,8 @@ public class Afectado {
         this.Id_afectado = Id_afectado;
     }
 
-    public void setId_cultivo(int Id_cultivo) {
-        this.Id_cultivo = Id_cultivo;
+    public void setId_lote(int Id_lote) {
+        this.Id_lote = Id_lote;
     }
 
     public void setId_plaga(int Id_plaga) {

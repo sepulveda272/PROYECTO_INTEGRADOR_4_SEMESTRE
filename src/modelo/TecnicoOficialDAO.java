@@ -187,4 +187,32 @@ public class TecnicoOficialDAO {
             return false;
         }
     }
+    
+    // EXISTS por ID activo
+    public boolean existeTecnicoActivo(int numero_registro) {
+        String sql = "SELECT COUNT(*) FROM TECNICO_OFICIAL WHERE NUMERO_REGISTRO = ? AND ESTADO = 'ACTIVO'";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setInt(1, numero_registro);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    // EXISTS por ID
+    public boolean existeTecnico(int numero_registro) {
+        String sql = "SELECT COUNT(*) FROM TECNICO_OFICIAL WHERE NUMERO_REGISTRO = ?";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setInt(1, numero_registro);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

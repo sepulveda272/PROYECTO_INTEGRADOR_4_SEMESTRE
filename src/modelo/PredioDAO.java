@@ -52,7 +52,7 @@ public class PredioDAO {
     // 🟡 LISTAR todos los predios (READ)
     public List<Predio> listarPredios() {
         List<Predio> lista = new ArrayList<>();
-        String sql = "SELECT * FROM PREDIO";
+        String sql = "SELECT * FROM PREDIO ORDER BY ID_PREDIO";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -123,5 +123,19 @@ public class PredioDAO {
             System.err.println("❌ Error al eliminar predio: " + e.getMessage());
             return false;
         }
+    }
+    
+    // EXISTS por ID
+    public boolean existePredio(int id_predio) {
+        String sql = "SELECT COUNT(*) FROM PREDIO WHERE ID_PREDIO = ?";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setInt(1, id_predio);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

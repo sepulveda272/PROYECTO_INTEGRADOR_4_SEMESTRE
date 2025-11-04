@@ -93,7 +93,7 @@ public class ProductorDAO {
     // Listar todos los productos con el estado activo (READ - Lista completa)
     public List<Productor> listarProductoresActivos() {
         List<Productor> lista = new ArrayList<>();
-        String sql = "SELECT * FROM PRODUCTOR";
+        String sql = "SELECT * FROM PRODUCTOR ORDER BY ID_PRODUCTOR";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -190,6 +190,21 @@ public class ProductorDAO {
     
     public boolean existeProductorActivo(int idProductor) {
         String sql = "SELECT COUNT(*) FROM PRODUCTOR WHERE ID_PRODUCTOR = ? AND ESTADO = 'ACTIVO'";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setInt(1, idProductor);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0; // true si existe y está activo
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    public boolean existeProductor(int idProductor) {
+        String sql = "SELECT COUNT(*) FROM PRODUCTOR WHERE ID_PRODUCTOR = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, idProductor);
             try (ResultSet rs = ps.executeQuery()) {

@@ -24,6 +24,12 @@ public class LugarProduccionController {
     public boolean agregarLugarProduccion(int idLugar, String departamento, String municipio, 
                                        String vereda, int cantidadMaxima, int idProductor) {
 
+        // Evitar duplicados por ID
+        if (lugarProduccionDAO.existeLugarPro(idLugar)) {
+            System.out.println("❌ Ya existe un lugar de produccion con ID " + idLugar + ".");
+            return false;
+        }
+        
         if (!productorDAO.existeProductorActivo(idProductor)) {
             System.out.println("❌ El productor con ID " + idProductor + " no existe o no está activo.");
             return false;
@@ -50,6 +56,11 @@ public class LugarProduccionController {
         }
         
         return resultado;
+    }
+    
+    // En PlagaController
+    public boolean existeIdLugarPro(int idLugar) {
+        return lugarProduccionDAO.existeLugarPro(idLugar);
     }
 
     /**

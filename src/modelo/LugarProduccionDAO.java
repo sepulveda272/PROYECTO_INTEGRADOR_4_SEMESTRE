@@ -64,7 +64,7 @@ public class LugarProduccionDAO {
     // Listar todos los lugares de produccion con el estado activo (READ - Lista completa)
     public List<LugarProduccion> listarLugaresProduccion() {
         List<LugarProduccion> lista = new ArrayList<>();
-        String sql = "SELECT * FROM LUGAR_PRODUCCION";
+        String sql = "SELECT * FROM LUGAR_PRODUCCION ORDER BY ID_LUGAR";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {

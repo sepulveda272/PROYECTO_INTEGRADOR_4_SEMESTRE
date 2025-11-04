@@ -19,8 +19,15 @@ public class ProductorController {
         this.productorDAO = new ProductorDAO();
     }
     
-    public void agregarProductor(int idProductor, long numeroIdentificacion, String tipoIdentificacion,String primerNombre, String segundoNombre, String primerApellido,String segundoApellido, String direccion, long celular,String correo, String password) {
+    public boolean agregarProductor(int idProductor, long numeroIdentificacion, String tipoIdentificacion,String primerNombre, String segundoNombre, String primerApellido,String segundoApellido, String direccion, long celular,String correo, String password) {
     
+        
+        // Evitar duplicados por ID
+        if (productorDAO.existeProductor(idProductor)) {
+            System.out.println("❌ Ya existe un productor con ID " + idProductor + ".");
+            return false;
+        }
+        
         // Crear objeto Productor con los datos recibidos
         Productor productor = new Productor(
             idProductor,
@@ -46,6 +53,12 @@ public class ProductorController {
         } else {
             System.out.println("❌ Error al agregar el productor.");
         }
+        return resultado;
+    }
+    
+    // En PlagaController
+    public boolean existeIdProductor(int idProductor) {
+        return productorDAO.existeProductor(idProductor);
     }
     
     public List<Productor> listarProductores() {

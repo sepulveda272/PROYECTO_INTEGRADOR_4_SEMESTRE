@@ -219,6 +219,15 @@ public class CrearTecnico extends javax.swing.JFrame {
             String correo = correoo.getText().trim();
             String password = contraseña.getText().trim();
             
+            TecnicoOficialController tecnicoOficialController = new TecnicoOficialController();
+            
+            // === Validaciones de duplicados usando DAO (vía controller) ===
+            if (tecnicoOficialController.existeIdTecnico(numeroRegistro)) {
+                JOptionPane.showMessageDialog(this, "❌ Ya existe un tecnico con ID " + numeroRegistro + ".");
+                numReistro.requestFocus();
+                return;
+            }
+            
             if (tipoIdentificacion.isEmpty() || primerNombre.isEmpty() || primerApellido.isEmpty() ||
                 direccionTxt.isEmpty() || correo.isEmpty() || password.isEmpty()) {
 
@@ -226,7 +235,7 @@ public class CrearTecnico extends javax.swing.JFrame {
                 return;
             }
             
-            TecnicoOficialController tecnicoOficialController = new TecnicoOficialController();
+            
             tecnicoOficialController.agregarTecnico(
                     numeroRegistro,
                     numeroIdentificacion,

@@ -22,8 +22,63 @@ public class Login extends javax.swing.JFrame {
         initComponents();
         setLocationRelativeTo(null);
         controlador = new Logincontroller();
+        initPlaceholders();
     }
 
+    private void initPlaceholders() {
+        setupPlaceholder(jTextField1, "Ingrese su correo");
+        setupPasswordPlaceholder(jPasswordField1, "Ingrese su contraseña");
+    }
+    
+    private void setupPlaceholder(javax.swing.JTextField field, String placeholder) {
+        java.awt.Color hint = new java.awt.Color(150, 150, 150);
+        field.setForeground(hint);
+        field.setText(placeholder);
+
+        field.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override public void focusGained(java.awt.event.FocusEvent e) {
+                if (placeholder.equals(field.getText())) {
+                    field.setText("");
+                    field.setForeground(java.awt.Color.BLACK);
+                }
+            }
+            @Override public void focusLost(java.awt.event.FocusEvent e) {
+                if (field.getText().isEmpty()) {
+                    field.setForeground(hint);
+                    field.setText(placeholder);
+                }
+            }
+        });
+    }
+
+    private void setupPasswordPlaceholder(javax.swing.JPasswordField field, String placeholder) {
+        java.awt.Color hint = new java.awt.Color(150, 150, 150);
+        final char normalEcho = field.getEchoChar(); // guarda el eco real
+
+        // Mostrar placeholder inicial
+        field.setForeground(hint);
+        field.setText(placeholder);
+        field.setEchoChar((char) 0); // mostrar texto en claro para el placeholder
+
+        field.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override public void focusGained(java.awt.event.FocusEvent e) {
+                String txt = new String(field.getPassword());
+                if (placeholder.equals(txt)) {
+                    field.setText("");
+                }
+                field.setForeground(java.awt.Color.BLACK);
+                field.setEchoChar(normalEcho); // vuelve a ocultar lo que se escriba
+            }
+            @Override public void focusLost(java.awt.event.FocusEvent e) {
+                String txt = new String(field.getPassword());
+                if (txt.isEmpty()) {
+                    field.setForeground(hint);
+                    field.setText(placeholder);
+                    field.setEchoChar((char) 0); // desactiva eco para ver el placeholder
+                }
+            }
+        });
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -100,8 +155,9 @@ public class Login extends javax.swing.JFrame {
         Integer idProductor = controlador.autenticarProductor(correo, contraseña);
         Integer numero_registro = controlador.autenticarTecnico(correo, contraseña);
         Integer idFuncionario = controlador.autenticarFuncionario(correo, contraseña);
+        Integer idAdmin = controlador.autenticarAdmin(correo, contraseña);
 
-        if (idProductor != null || numero_registro != null || idFuncionario != null) {
+        if (idProductor != null || numero_registro != null || idFuncionario != null || idAdmin != null) {
             JOptionPane.showMessageDialog(this, "✅ Login exitoso. ¡Bienvenido!");
 
             // Pasar el ID del productor a la siguiente vista (por ejemplo, Tabla)

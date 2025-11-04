@@ -183,7 +183,18 @@ public class CrearPredio extends javax.swing.JFrame {
             double coordenadasLat = Double.parseDouble(latitud.getText().trim());
             double coordenadasLon = Double.parseDouble(longitud.getText().trim());
             int idLugar = Integer.parseInt(id__lugarPro.getText().trim());
-
+            
+            
+            // Crear controlador
+            PredioController predioController = new PredioController();
+            
+            // === Validaciones de duplicados usando DAO (vía controller) ===
+            if (predioController.existeIdPredio(idPredio)) {
+                JOptionPane.showMessageDialog(this, "❌ Ya existe un predio con ID " + idPredio + ".");
+                id__predioo.requestFocus();
+                return;
+            }
+            
             // Validar campos obligatorios
             if (nombrePredio.isEmpty() || nombrePropietario.isEmpty() || direccion.isEmpty()) {
                 JOptionPane.showMessageDialog(this, 
@@ -192,8 +203,7 @@ public class CrearPredio extends javax.swing.JFrame {
                 return;
             }
 
-            // Crear controlador
-            PredioController predioController = new PredioController();
+            
 
             // Intentar agregar lugar
             boolean exito = predioController.agregarPredio(

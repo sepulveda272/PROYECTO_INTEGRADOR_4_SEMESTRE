@@ -157,7 +157,17 @@ public class CrearLugarPro extends javax.swing.JFrame {
             String vereda = veredaa.getText().trim();
             int cantidadMaxima = Integer.parseInt(cantidad.getText().trim());
             int idProductor = Integer.parseInt(id__productor.getText().trim());
-
+            
+            
+            // Crear controlador
+            LugarProduccionController lugarProduccionController = new LugarProduccionController();
+            
+            // === Validaciones de duplicados usando DAO (vía controller) ===
+            if (lugarProduccionController.existeIdLugarPro(idLugar)) {
+                JOptionPane.showMessageDialog(this, "❌ Ya existe un lugar de produccion con ID " + idLugar + ".");
+                id__lugar.requestFocus();
+                return;
+            }
             // Validar campos obligatorios
             if (departamento.isEmpty() || municipio.isEmpty() || vereda.isEmpty()) {
                 JOptionPane.showMessageDialog(this, 
@@ -166,8 +176,7 @@ public class CrearLugarPro extends javax.swing.JFrame {
                 return;
             }
 
-            // Crear controlador
-            LugarProduccionController lugarProduccionController = new LugarProduccionController();
+            
 
             // Intentar agregar lugar
             boolean exito = lugarProduccionController.agregarLugarProduccion(

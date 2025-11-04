@@ -219,6 +219,15 @@ public class CrearProductor extends javax.swing.JFrame {
             String correo = correoo.getText().trim();
             String password = contraseña.getText().trim();
             
+            ProductorController productorController = new ProductorController();
+            
+            // === Validaciones de duplicados usando DAO (vía controller) ===
+            if (productorController.existeIdProductor(idProductor)) {
+                JOptionPane.showMessageDialog(this, "❌ Ya existe un productor con ID " + idProductor + ".");
+                id__productor.requestFocus();
+                return;
+            }
+            
             if (tipoIdentificacion.isEmpty() || primerNombre.isEmpty() || primerApellido.isEmpty() ||
                 direccionTxt.isEmpty() || correo.isEmpty() || password.isEmpty()) {
 
@@ -226,7 +235,7 @@ public class CrearProductor extends javax.swing.JFrame {
                 return;
             }
             
-            ProductorController productorController = new ProductorController();
+            
             productorController.agregarProductor(
                     idProductor,
                     numeroIdentificacion,

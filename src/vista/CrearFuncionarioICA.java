@@ -206,13 +206,23 @@ public class CrearFuncionarioICA extends javax.swing.JFrame {
             String correo = correoo.getText().trim();
             String password = contraseña.getText().trim();
             
+            
+            FuncionarioICAController funcionarioICAController = new FuncionarioICAController();
+            
+            // === Validaciones de duplicados usando DAO (vía controller) ===
+            if (funcionarioICAController.existeIdFuncionario(idFuncionario)) {
+                JOptionPane.showMessageDialog(this, "❌ Ya existe un funcionario con ID " + idFuncionario + ".");
+                idFuncionarioo.requestFocus();
+                return;
+            }
+            
             if (tipoIdentificacion.isEmpty() || primerNombre.isEmpty() || primerApellido.isEmpty() || correo.isEmpty() || password.isEmpty()) {
 
                 JOptionPane.showMessageDialog(this, "Por favor completa todos los campos obligatorios.");
                 return;
             }
             
-            FuncionarioICAController funcionarioICAController = new FuncionarioICAController();
+            
             funcionarioICAController.agregarFuncionarioICA(
                     idFuncionario,
                     numeroIdentificacion,

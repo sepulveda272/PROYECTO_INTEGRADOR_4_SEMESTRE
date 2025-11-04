@@ -19,8 +19,15 @@ public class TecnicoOficialController {
         this.tecnicoOficialDAO = new TecnicoOficialDAO();
     }
     
-    public void agregarTecnico(int numeroRegistro, long numeroIdentificacion, String tipoIdentificacion,String primerNombre, String segundoNombre, String primerApellido,String segundoApellido, String direccion, long celular,String correo, String password) {
+    public boolean agregarTecnico(int numeroRegistro, long numeroIdentificacion, String tipoIdentificacion,String primerNombre, String segundoNombre, String primerApellido,String segundoApellido, String direccion, long celular,String correo, String password) {
     
+        
+        // Evitar duplicados por ID
+        if (tecnicoOficialDAO.existeTecnico(numeroRegistro)) {
+            System.out.println("❌ Ya existe un tecnico con ID " + numeroRegistro + ".");
+            return false;
+        }
+        
         // Crear objeto Productor con los datos recibidos
         TecnicoOficial tecnico = new TecnicoOficial(
             numeroRegistro,
@@ -46,7 +53,14 @@ public class TecnicoOficialController {
         } else {
             System.out.println("❌ Error al agregar el Tecnico.");
         }
+        return resultado;
     }
+    
+    // En PlagaController
+    public boolean existeIdTecnico(int numeroRegistro) {
+        return tecnicoOficialDAO.existeTecnico(numeroRegistro);
+    }
+    
     
     public List<TecnicoOficial> listarTecnico() {
         List<TecnicoOficial> tecnicos = tecnicoOficialDAO.listarTecnicosActivos();

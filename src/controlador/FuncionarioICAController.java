@@ -19,8 +19,14 @@ public class FuncionarioICAController {
         this.funcionarioICADAO = new FuncionarioICADAO();
     }
     
-    public void agregarFuncionarioICA(int idFuncionario, long numeroIdentificacion, String tipoIdentificacion,String primerNombre, String segundoNombre, String primerApellido,String segundoApellido, long celular,String correo, String password) {
-    
+    public boolean agregarFuncionarioICA(int idFuncionario, long numeroIdentificacion, String tipoIdentificacion,String primerNombre, String segundoNombre, String primerApellido,String segundoApellido, long celular,String correo, String password) {
+        
+        // Evitar duplicados por ID
+        if (funcionarioICADAO.existeFuncionario(idFuncionario)) {
+            System.out.println("❌ Ya existe un funcionario con ID " + idFuncionario + ".");
+            return false;
+        }
+        
         // Crear objeto Productor con los datos recibidos
         FuncionarioICA funcionario = new FuncionarioICA(
             idFuncionario,
@@ -45,6 +51,12 @@ public class FuncionarioICAController {
         } else {
             System.out.println("❌ Error al agregar el Tecnico.");
         }
+        return resultado;
+    }
+    
+    // En PlagaController
+    public boolean existeIdFuncionario(int idFuncionario) {
+        return funcionarioICADAO.existeFuncionario(idFuncionario);
     }
     
     public List<FuncionarioICA> listarFuncionario() {
