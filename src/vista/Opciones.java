@@ -82,6 +82,11 @@ public class Opciones extends javax.swing.JFrame {
         jButton9.setText("Observaciones");
 
         jButton10.setText("Plaga");
+        jButton10.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton10ActionPerformed(evt);
+            }
+        });
 
         jLabel1.setFont(new java.awt.Font("Lucida Bright", 3, 24)); // NOI18N
         jLabel1.setText("Seleccione una opcion");
@@ -203,6 +208,12 @@ public class Opciones extends javax.swing.JFrame {
         TablaLugarPr tablaLugarPr = new TablaLugarPr();
         tablaLugarPr.setVisible(true);
     }//GEN-LAST:event_jButton4ActionPerformed
+
+    private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton10ActionPerformed
+        // TODO add your handling code here:
+        TablaPlaga tablaPlaga = new TablaPlaga();
+        tablaPlaga.setVisible(true);
+    }//GEN-LAST:event_jButton10ActionPerformed
 
     /**
      * @param args the command line arguments
