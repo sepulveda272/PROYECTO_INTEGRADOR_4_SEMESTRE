@@ -32,15 +32,11 @@ public class TecnicoOficialDAO {
             System.err.println("Error obteniendo NEXTVAL de seq_tecnico: " + e.getMessage());
             e.printStackTrace();
         }
-        return -1; // señal de error
+        return -1;
     }
 
     /* ===================== AUTH / LOGIN (BCrypt) ===================== */
 
-    /**
-     * Retorna NUMERO_REGISTRO si credenciales OK y ESTADO='ACTIVO'; si no, null.
-     * Ahora comparamos usando BCrypt en vez de WHERE password = ?
-     */
     public Integer validarTecnico(String correo, String passwordPlano) {
         String sql = "SELECT NUMERO_REGISTRO, PASSWORD FROM TECNICO_OFICIAL WHERE CORREO = ? AND ESTADO = 'ACTIVO'";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
@@ -61,14 +57,13 @@ public class TecnicoOficialDAO {
         return null;
     }
 
-    /* ===================== CREATE (con ID provisto) ===================== */
+    /* ===================== CREATE ===================== */
 
-    /** Inserta usando el numero_registro recibido; hashea la contraseña. */
     public boolean insertarTecnico(TecnicoOficial t) {
         String sql = "INSERT INTO TECNICO_OFICIAL (NUMERO_REGISTRO, NUMERO_IDENTIFICACION, TIPO_IDENTIFICACION, "
                    + "PRIMER_NOMBRE, SEGUNDO_NOMBRE, PRIMER_APELLIDO, SEGUNDO_APELLIDO, "
                    + "DIRECCION, CELULAR, CORREO, PASSWORD) "
-                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; // ESTADO -> DEFAULT 'ACTIVO'
+                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, t.getNumero_registro());
@@ -81,13 +76,8 @@ public class TecnicoOficialDAO {
             ps.setString(8, t.getDireccion());
             ps.setLong(9, t.getCelular());
             ps.setString(10, t.getCorreo());
-
-            // 🔐 Hash de contraseña
-            String hash = BCrypt.hashpw(t.getPassword(), BCrypt.gensalt(12));
-            ps.setString(11, hash);
-
+            ps.setString(11, BCrypt.hashpw(t.getPassword(), BCrypt.gensalt(12)));
             return ps.executeUpdate() > 0;
-
         } catch (SQLException e) {
             if (e.getMessage() != null && e.getMessage().toUpperCase().contains("UQ_TEC_IDENT")) {
                 System.err.println("❌ Ya existe un técnico con ese numero_identificacion.");
@@ -99,12 +89,6 @@ public class TecnicoOficialDAO {
         }
     }
 
-    /* ===================== CREATE (ID automático con secuencia) ===================== */
-
-    /**
-     * Inserta generando numero_registro con seq_tecnico.
-     * Retorna el numero_registro generado (>0) si OK; -1 si falla.
-     */
     public int insertarTecnicoAuto(TecnicoOficial t) {
         int nuevoId = siguienteNumeroRegistro();
         if (nuevoId <= 0) {
@@ -116,7 +100,7 @@ public class TecnicoOficialDAO {
         return ok ? nuevoId : -1;
     }
 
-    /* ===================== READ (activos) ===================== */
+    /* ===================== READ ===================== */
 
     public List<TecnicoOficial> listarTecnicosActivos() {
         List<TecnicoOficial> lista = new ArrayList<>();
@@ -164,16 +148,9 @@ public class TecnicoOficialDAO {
 
     public boolean actualizarTecnico(TecnicoOficial t) {
         String sql = "UPDATE TECNICO_OFICIAL SET "
-                   + "NUMERO_IDENTIFICACION = ?, "
-                   + "TIPO_IDENTIFICACION = ?, "
-                   + "PRIMER_NOMBRE = ?, "
-                   + "SEGUNDO_NOMBRE = ?, "
-                   + "PRIMER_APELLIDO = ?, "
-                   + "SEGUNDO_APELLIDO = ?, "
-                   + "DIRECCION = ?, "
-                   + "CELULAR = ?, "
-                   + "CORREO = ?, "
-                   + "ESTADO = ? "
+                   + "NUMERO_IDENTIFICACION = ?, TIPO_IDENTIFICACION = ?, "
+                   + "PRIMER_NOMBRE = ?, SEGUNDO_NOMBRE = ?, PRIMER_APELLIDO = ?, SEGUNDO_APELLIDO = ?, "
+                   + "DIRECCION = ?, CELULAR = ?, CORREO = ?, ESTADO = ? "
                    + "WHERE NUMERO_REGISTRO = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setLong(1, t.getNumero_identificacion());
@@ -199,7 +176,6 @@ public class TecnicoOficialDAO {
         }
     }
 
-    /** Cambiar contraseña: guarda hash BCrypt. */
     public boolean actualizarPassword(int numeroRegistro, String nuevoPasswordPlano) {
         if (nuevoPasswordPlano == null || nuevoPasswordPlano.isEmpty()) {
             System.err.println("❌ password no puede ser vacío.");
@@ -214,14 +190,48 @@ public class TecnicoOficialDAO {
         } catch (SQLException e) { e.printStackTrace(); return false; }
     }
 
-    /* ===================== DELETE / REACTIVAR ===================== */
+    /* ===================== DELETE (Lógico, con validación FK) ===================== */
 
-    public boolean eliminarTecnico(int numeroRegistro) {
-        String sql = "UPDATE TECNICO_OFICIAL SET ESTADO = 'INACTIVO' WHERE NUMERO_REGISTRO = ?";
+    /** Cuenta inspecciones que referencian al técnico. */
+    private int contarInspeccionesPorTecnico(int numeroRegistro) {
+        final String sql = "SELECT COUNT(*) FROM INSPECCION_FITOSANITARIA WHERE ID_TECNICO = ?";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setInt(1, numeroRegistro);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    /** Inactiva SOLO si no está referenciado por inspecciones. */
+    public boolean desactivarTecnicoSiNoReferenciado(int numeroRegistro) {
+        if (!existeTecnico(numeroRegistro)) {
+            System.err.println("⚠️ No existe el técnico con número de registro " + numeroRegistro + ".");
+            return false;
+        }
+
+        int refs = contarInspeccionesPorTecnico(numeroRegistro);
+        if (refs < 0) {
+            System.err.println("Error verificando referencias de inspecciones.");
+            return false;
+        }
+        if (refs > 0) {
+            System.err.println("❌ No se puede inactivar: el técnico está referenciado por " + refs + " inspección(es).");
+            return false;
+        }
+
+        final String sql = "UPDATE TECNICO_OFICIAL SET ESTADO = 'INACTIVO' WHERE NUMERO_REGISTRO = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, numeroRegistro);
             return ps.executeUpdate() > 0;
-        } catch (SQLException e) { e.printStackTrace(); return false; }
+        } catch (SQLException e) {
+            System.err.println("Error al desactivar técnico: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /* ===================== EXISTS ===================== */

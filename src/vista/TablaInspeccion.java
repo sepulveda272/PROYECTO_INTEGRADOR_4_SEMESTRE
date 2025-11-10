@@ -121,8 +121,8 @@ class TablaInspeccion extends javax.swing.JFrame {
 
         jLabel1.setFont(new java.awt.Font("Cambria", 3, 48)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel1.setText("Lotes");
-        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 10, 120, 60));
+        jLabel1.setText("Inspecciones fitosanitarias");
+        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 10, 580, 60));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

@@ -5,7 +5,11 @@
 package vista;
 
 import controlador.LugarProduccionController;
-import javax.swing.JOptionPane;
+import java.util.ArrayList;
+import modelo.Productor;
+import modelo.ProductorDAO;
+import javax.swing.*;
+import java.util.List;
 
 /**
  *
@@ -18,6 +22,7 @@ public class ActualizarLugarPro extends javax.swing.JFrame {
      */
   
     private Runnable onLugarProActualizado;
+    private final List<Integer> productorIds = new ArrayList<>();
   
     public ActualizarLugarPro(
             int idLugar,
@@ -32,14 +37,32 @@ public class ActualizarLugarPro extends javax.swing.JFrame {
 
         // Guardar callback para refrescar tabla al actualizar
         this.onLugarProActualizado = onLugarProActualizado;
+        
+        cargarCombosSeleccionando(idProductor);
 
         // Llenar los campos con los datos del lugar de producción
         this.id__lugar.setText(String.valueOf(idLugar));
+        id__lugar.setEditable(false);
         this.departamentoo.setText(departamento);
         this.municipioo.setText(municipio);
         this.veredaa.setText(vereda);
         this.cantidad.setText(String.valueOf(cantidadMaxima));
-        this.id__productor.setText(String.valueOf(idProductor));
+    }
+    
+    private void cargarCombosSeleccionando(int idProductor) {
+        cboProductor.removeAllItems();
+        productorIds.clear();
+
+        // Técnicos
+        ProductorDAO tdao = new ProductorDAO();
+        int idxSelP = -1; int idx = 0;
+        for (Productor t : tdao.listarProductoresActivos()) {
+            cboProductor.addItem(t.getPrimer_nombre());
+            productorIds.add(t.getId_productor());
+            if (t.getId_productor()== idProductor) idxSelP = idx;
+            idx++;
+        }
+        if (idxSelP >= 0) cboProductor.setSelectedIndex(idxSelP);
     }
 
     /**
@@ -54,12 +77,18 @@ public class ActualizarLugarPro extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         actualizarTec = new javax.swing.JButton();
         id__lugar = new javax.swing.JTextField();
+        jLabel12 = new javax.swing.JLabel();
         departamentoo = new javax.swing.JTextField();
-        municipioo = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
         veredaa = new javax.swing.JTextField();
         cantidad = new javax.swing.JTextField();
-        id__productor = new javax.swing.JTextField();
-        jLabel12 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        municipioo = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        cboProductor = new javax.swing.JComboBox<>();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setBackground(new java.awt.Color(255, 238, 208));
@@ -73,48 +102,61 @@ public class ActualizarLugarPro extends javax.swing.JFrame {
                 actualizarTecActionPerformed(evt);
             }
         });
-        jPanel1.add(actualizarTec, new org.netbeans.lib.awtextra.AbsoluteConstraints(250, 280, 170, 60));
+        jPanel1.add(actualizarTec, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 360, 170, 60));
 
         id__lugar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 id__lugarActionPerformed(evt);
             }
         });
-        jPanel1.add(id__lugar, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 70, 180, 40));
+        jPanel1.add(id__lugar, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 130, 180, 40));
+
+        jLabel12.setFont(new java.awt.Font("Cambria", 3, 48)); // NOI18N
+        jLabel12.setForeground(new java.awt.Color(51, 153, 0));
+        jLabel12.setText("Actualizar lugar de produccion");
+        jPanel1.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 0, 680, 60));
 
         departamentoo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 departamentooActionPerformed(evt);
             }
         });
-        jPanel1.add(departamentoo, new org.netbeans.lib.awtextra.AbsoluteConstraints(450, 70, 180, 40));
+        jPanel1.add(departamentoo, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 130, 180, 40));
 
-        municipioo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                municipiooActionPerformed(evt);
-            }
-        });
-        jPanel1.add(municipioo, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 150, 180, 40));
-        jPanel1.add(veredaa, new org.netbeans.lib.awtextra.AbsoluteConstraints(450, 150, 180, 40));
+        jLabel2.setText("Id del lugar de produccion");
+        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 110, -1, -1));
+
+        jLabel4.setText("Vereda");
+        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 190, -1, -1));
+        jPanel1.add(veredaa, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 210, 180, 40));
 
         cantidad.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cantidadActionPerformed(evt);
             }
         });
-        jPanel1.add(cantidad, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 220, 180, 40));
+        jPanel1.add(cantidad, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 290, 180, 40));
 
-        id__productor.addActionListener(new java.awt.event.ActionListener() {
+        jLabel5.setText("Cantidad maxima");
+        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 270, -1, -1));
+
+        municipioo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                id__productorActionPerformed(evt);
+                municipiooActionPerformed(evt);
             }
         });
-        jPanel1.add(id__productor, new org.netbeans.lib.awtextra.AbsoluteConstraints(450, 220, 180, 40));
+        jPanel1.add(municipioo, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 210, 180, 40));
 
-        jLabel12.setFont(new java.awt.Font("Cambria", 3, 48)); // NOI18N
-        jLabel12.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel12.setText("Actualizar lugar de produccion");
-        jPanel1.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 0, 680, 60));
+        jLabel3.setText("Municipio");
+        jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 190, -1, -1));
+
+        jPanel1.add(cboProductor, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 290, 180, 40));
+
+        jLabel6.setText("Productor");
+        jPanel1.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 270, -1, -1));
+
+        jLabel7.setText("Departamento");
+        jPanel1.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 110, -1, -1));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -126,10 +168,7 @@ public class ActualizarLugarPro extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 366, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0))
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)
         );
 
         pack();
@@ -143,7 +182,6 @@ public class ActualizarLugarPro extends javax.swing.JFrame {
         String municipio = municipioo.getText().trim();
         String vereda = veredaa.getText().trim();
         int cantidadMaxima = Integer.parseInt(cantidad.getText().trim());
-        int idProductor = Integer.parseInt(id__productor.getText().trim());
 
         // Validar campos obligatorios
         if (departamento.isEmpty() || municipio.isEmpty() || vereda.isEmpty()) {
@@ -152,12 +190,25 @@ public class ActualizarLugarPro extends javax.swing.JFrame {
                 "Campos vacíos", JOptionPane.WARNING_MESSAGE);
             return;
         }
+        if (cantidadMaxima <= 0) {
+            JOptionPane.showMessageDialog(this, "La cantidad máxima debe ser > 0.");
+            return;
+        }
+
+        int idxP = cboProductor.getSelectedIndex();
+        if (idxP < 0) {
+            JOptionPane.showMessageDialog(this, "Seleccione productor.");
+            return;
+        }
+
+        int idProductor = productorIds.get(idxP);
+
 
         // Crear el controlador
         LugarProduccionController lugarProduccionController = new LugarProduccionController();
 
         // Llamar al método de actualización
-        boolean actualizado = lugarProduccionController.actualizarLugarProduccion(
+        boolean actualizado = lugarProduccionController.actualizarLugar(
             idLugar, departamento, municipio, vereda, cantidadMaxima, idProductor
         );
 
@@ -195,21 +246,17 @@ public class ActualizarLugarPro extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_id__lugarActionPerformed
 
-    private void municipiooActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_municipiooActionPerformed
+    private void departamentooActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_departamentooActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_municipiooActionPerformed
+    }//GEN-LAST:event_departamentooActionPerformed
 
     private void cantidadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cantidadActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_cantidadActionPerformed
 
-    private void departamentooActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_departamentooActionPerformed
+    private void municipiooActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_municipiooActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_departamentooActionPerformed
-
-    private void id__productorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_id__productorActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_id__productorActionPerformed
+    }//GEN-LAST:event_municipiooActionPerformed
 
     /**
      * @param args the command line arguments
@@ -227,10 +274,16 @@ public class ActualizarLugarPro extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton actualizarTec;
     private javax.swing.JTextField cantidad;
+    private javax.swing.JComboBox<String> cboProductor;
     private javax.swing.JTextField departamentoo;
     private javax.swing.JTextField id__lugar;
-    private javax.swing.JTextField id__productor;
     private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField municipioo;
     private javax.swing.JTextField veredaa;

@@ -5,7 +5,13 @@
 package vista;
 
 import controlador.PredioController;
-import javax.swing.JOptionPane;
+import modelo.LugarProduccion;
+import modelo.LugarProduccionDAO;
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
+import modelo.ProductorDAO;
+
 
 /**
  *
@@ -18,6 +24,7 @@ public class ActualizarPredio extends javax.swing.JFrame {
      */
   
     private Runnable onPredioActualizado;
+    private final List<Integer> lugarProIds = new ArrayList<>();
   
     public ActualizarPredio(
             int idPredio,
@@ -36,16 +43,34 @@ public class ActualizarPredio extends javax.swing.JFrame {
         // Guardar callback para refrescar tabla
         this.onPredioActualizado = onPredioActualizado;
 
+        cargarCombosSeleccionando(idLugar);
+        
         // Llenar los campos con los datos del predio
         this.id__predio.setText(String.valueOf(idPredio));
-        this.nombrePRE.setText(nombrePredio);
-        this.AreaTT.setText(String.valueOf(areaTotal));
-        this.nombrePRO.setText(nombrePropietario);
-        this.direccionn.setText(direccion);
+        id__predio.setEditable(false);
+        this.nombrePR.setText(nombrePredio);
+        this.AreaT.setText(String.valueOf(areaTotal));
+        this.NombrePropi.setText(nombrePropietario);
+        this.Direccionn.setText(direccion);
         this.latitud.setText(String.valueOf(coordenadasLat));
         this.longitud.setText(String.valueOf(coordenadasLon));
-        this.id__lugarrr.setText(String.valueOf(idLugar));
-        this.estadoo.setText(estado);
+        cboEstado.addItem("ACTIVO"); cboEstado.addItem("INACTIVO"); cboEstado.setSelectedItem(estado);
+    }
+    
+    private void cargarCombosSeleccionando(int idLugar) {
+        cboLugar1.removeAllItems();
+        lugarProIds.clear();
+
+        // lugares
+        LugarProduccionDAO tdao = new LugarProduccionDAO();
+        int idxSelP = -1; int idx = 0;
+        for (LugarProduccion t : tdao.listarLugaresConProductor()) {
+            cboLugar1.addItem(t.getDepartamento());
+            lugarProIds.add(t.getId_lugar());
+            if (t.getId_lugar()== idLugar) idxSelP = idx;
+            idx++;
+        }
+        if (idxSelP >= 0) cboLugar1.setSelectedIndex(idxSelP);
     }
 
     /**
@@ -60,15 +85,24 @@ public class ActualizarPredio extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         actualizarTec = new javax.swing.JButton();
         id__predio = new javax.swing.JTextField();
-        nombrePRE = new javax.swing.JTextField();
-        AreaTT = new javax.swing.JTextField();
-        nombrePRO = new javax.swing.JTextField();
-        direccionn = new javax.swing.JTextField();
-        latitud = new javax.swing.JTextField();
         jLabel12 = new javax.swing.JLabel();
-        id__lugarrr = new javax.swing.JTextField();
+        nombrePR = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        NombrePropi = new javax.swing.JTextField();
+        jLabel7 = new javax.swing.JLabel();
+        latitud = new javax.swing.JTextField();
+        AreaT = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
         longitud = new javax.swing.JTextField();
-        estadoo = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        Direccionn = new javax.swing.JTextField();
+        cboEstado = new javax.swing.JComboBox<>();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        cboLugar1 = new javax.swing.JComboBox<>();
+        jLabel10 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setBackground(new java.awt.Color(255, 238, 208));
@@ -82,69 +116,86 @@ public class ActualizarPredio extends javax.swing.JFrame {
                 actualizarTecActionPerformed(evt);
             }
         });
-        jPanel1.add(actualizarTec, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 400, 170, 60));
+        jPanel1.add(actualizarTec, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 520, 170, 60));
 
         id__predio.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 id__predioActionPerformed(evt);
             }
         });
-        jPanel1.add(id__predio, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 70, 180, 40));
-
-        nombrePRE.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                nombrePREActionPerformed(evt);
-            }
-        });
-        jPanel1.add(nombrePRE, new org.netbeans.lib.awtextra.AbsoluteConstraints(310, 70, 180, 40));
-
-        AreaTT.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                AreaTTActionPerformed(evt);
-            }
-        });
-        jPanel1.add(AreaTT, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 150, 180, 40));
-        jPanel1.add(nombrePRO, new org.netbeans.lib.awtextra.AbsoluteConstraints(310, 150, 180, 40));
-
-        direccionn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                direccionnActionPerformed(evt);
-            }
-        });
-        jPanel1.add(direccionn, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 220, 180, 40));
-
-        latitud.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                latitudActionPerformed(evt);
-            }
-        });
-        jPanel1.add(latitud, new org.netbeans.lib.awtextra.AbsoluteConstraints(310, 220, 180, 40));
+        jPanel1.add(id__predio, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 100, 180, 40));
 
         jLabel12.setFont(new java.awt.Font("Cambria", 3, 48)); // NOI18N
         jLabel12.setForeground(new java.awt.Color(51, 153, 0));
         jLabel12.setText("Actualizar predio");
         jPanel1.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 0, 390, 60));
 
-        id__lugarrr.addActionListener(new java.awt.event.ActionListener() {
+        nombrePR.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                id__lugarrrActionPerformed(evt);
+                nombrePRActionPerformed(evt);
             }
         });
-        jPanel1.add(id__lugarrr, new org.netbeans.lib.awtextra.AbsoluteConstraints(310, 290, 180, 40));
+        jPanel1.add(nombrePR, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 100, 180, 40));
+
+        jLabel2.setText("Id del predio");
+        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 80, -1, -1));
+
+        jLabel4.setText("Nombre del propietario");
+        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 170, -1, -1));
+        jPanel1.add(NombrePropi, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 190, 180, 40));
+
+        jLabel7.setText("Cordenadas (Latitud)");
+        jPanel1.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 250, -1, -1));
+
+        latitud.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                latitudActionPerformed(evt);
+            }
+        });
+        jPanel1.add(latitud, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 270, 180, 40));
+
+        AreaT.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                AreaTActionPerformed(evt);
+            }
+        });
+        jPanel1.add(AreaT, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 190, 180, 40));
+
+        jLabel3.setText("Area total (Hectarioas)");
+        jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 170, -1, -1));
+
+        jLabel8.setText("Cordenadas (Longitud)");
+        jPanel1.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 250, -1, -1));
 
         longitud.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 longitudActionPerformed(evt);
             }
         });
-        jPanel1.add(longitud, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 290, 180, 40));
+        jPanel1.add(longitud, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 270, 180, 40));
 
-        estadoo.addActionListener(new java.awt.event.ActionListener() {
+        jLabel5.setText("Direccion");
+        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 340, -1, -1));
+
+        Direccionn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                estadooActionPerformed(evt);
+                DireccionnActionPerformed(evt);
             }
         });
-        jPanel1.add(estadoo, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 350, 180, 40));
+        jPanel1.add(Direccionn, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 360, 180, 40));
+
+        jPanel1.add(cboEstado, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 450, 180, 40));
+
+        jLabel6.setText("Estado");
+        jPanel1.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 430, -1, -1));
+
+        jLabel9.setText("Nombre del predio");
+        jPanel1.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 80, -1, -1));
+
+        jPanel1.add(cboLugar1, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 360, 180, 40));
+
+        jLabel10.setText("lugar de produccion");
+        jPanel1.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 340, -1, -1));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -156,7 +207,7 @@ public class ActualizarPredio extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 476, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 593, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -167,14 +218,13 @@ public class ActualizarPredio extends javax.swing.JFrame {
     try {
         // Obtener los valores del formulario
         int idPredio = Integer.parseInt(id__predio.getText().trim());
-        String nombrePredio = nombrePRE.getText().trim();
-        double areaTotal = Double.parseDouble(AreaTT.getText().trim());
-        String nombrePropietario = nombrePRO.getText().trim();
-        String direccion = direccionn.getText().trim();
+        String nombrePredio = nombrePR.getText().trim();
+        double areaTotal = Double.parseDouble(AreaT.getText().trim());
+        String nombrePropietario = NombrePropi.getText().trim();
+        String direccion = Direccionn.getText().trim();
         double coordenadasLat = Double.parseDouble(latitud.getText().trim());
         double coordenadasLon = Double.parseDouble(longitud.getText().trim());
-        int idLugar = Integer.parseInt(id__lugarrr.getText().trim());
-        String estado = estadoo.getText().trim();
+        String estado = (String) cboEstado.getSelectedItem();
 
         // Validar campos obligatorios
         if (nombrePredio.isEmpty() || nombrePropietario.isEmpty() || direccion.isEmpty()) {
@@ -183,6 +233,13 @@ public class ActualizarPredio extends javax.swing.JFrame {
                 "Campos vacíos", JOptionPane.WARNING_MESSAGE);
             return;
         }
+        
+        int idxP = cboLugar1.getSelectedIndex();
+        if (idxP < 0) {
+            JOptionPane.showMessageDialog(this, "Seleccione Lugar de produccion.");
+            return;
+        }
+        int idLugar = lugarProIds.get(idxP);
 
         // Crear el controlador
         PredioController predioController = new PredioController();
@@ -234,33 +291,25 @@ public class ActualizarPredio extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_id__predioActionPerformed
 
-    private void AreaTTActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AreaTTActionPerformed
+    private void nombrePRActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nombrePRActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_AreaTTActionPerformed
-
-    private void direccionnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_direccionnActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_direccionnActionPerformed
-
-    private void nombrePREActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nombrePREActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_nombrePREActionPerformed
+    }//GEN-LAST:event_nombrePRActionPerformed
 
     private void latitudActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_latitudActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_latitudActionPerformed
 
-    private void id__lugarrrActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_id__lugarrrActionPerformed
+    private void AreaTActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AreaTActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_id__lugarrrActionPerformed
+    }//GEN-LAST:event_AreaTActionPerformed
 
     private void longitudActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_longitudActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_longitudActionPerformed
 
-    private void estadooActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_estadooActionPerformed
+    private void DireccionnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DireccionnActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_estadooActionPerformed
+    }//GEN-LAST:event_DireccionnActionPerformed
 
     /**
      * @param args the command line arguments
@@ -276,17 +325,26 @@ public class ActualizarPredio extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField AreaTT;
+    private javax.swing.JTextField AreaT;
+    private javax.swing.JTextField Direccionn;
+    private javax.swing.JTextField NombrePropi;
     private javax.swing.JButton actualizarTec;
-    private javax.swing.JTextField direccionn;
-    private javax.swing.JTextField estadoo;
-    private javax.swing.JTextField id__lugarrr;
+    private javax.swing.JComboBox<String> cboEstado;
+    private javax.swing.JComboBox<String> cboLugar1;
     private javax.swing.JTextField id__predio;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField latitud;
     private javax.swing.JTextField longitud;
-    private javax.swing.JTextField nombrePRE;
-    private javax.swing.JTextField nombrePRO;
+    private javax.swing.JTextField nombrePR;
     // End of variables declaration//GEN-END:variables
 }

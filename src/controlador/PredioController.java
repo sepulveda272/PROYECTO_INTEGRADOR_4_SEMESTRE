@@ -6,132 +6,149 @@ package controlador;
 
 import modelo.Predio;
 import modelo.PredioDAO;
-import modelo.LugarProduccionDAO;
 import java.util.List;
 /**
  *
  * @author ADMIN
  */
 public class PredioController {
-    private PredioDAO predioDAO;
-    private LugarProduccionDAO lugarProduccionDAO;
+    private final PredioDAO predioDAO;
 
     public PredioController() {
         this.predioDAO = new PredioDAO();
-        this.lugarProduccionDAO = new LugarProduccionDAO();
     }
-    
-    public boolean agregarPredio(int idPredio, String nombrePredio, double areaTotal,
-                                 String nombrePropietario, String direccion,
-                                 double coordenadasLat, double coordenadasLon, int idLugar, String estado) {
 
-        // Evitar duplicados por ID
-        if (predioDAO.existePredio(idPredio)) {
-            System.out.println("❌ Ya existe un predio con ID " + idPredio + ".");
+    /* ===================== VALIDACIONES (mínimas) ===================== */
+
+    private String validarCampos(String nombrePredio,
+                                 Double areaTotal,
+                                 String nombrePropietario,
+                                 String direccion,
+                                 Double lat,
+                                 Double lon,
+                                 Integer idLugar,
+                                 String estadoOpt) {
+
+        if (nombrePredio == null || nombrePredio.trim().isEmpty()) return "El nombre del predio es obligatorio.";
+        if (areaTotal == null || areaTotal <= 0)                   return "El área total debe ser > 0.";
+        if (nombrePropietario == null || nombrePropietario.trim().isEmpty())
+            return "El nombre del propietario es obligatorio.";
+        if (direccion == null || direccion.trim().isEmpty())       return "La dirección es obligatoria.";
+
+        if (lat == null || lat < -90 || lat > 90)                  return "Latitud fuera de rango (-90..90).";
+        if (lon == null || lon < -180 || lon > 180)                return "Longitud fuera de rango (-180..180).";
+
+        if (estadoOpt != null && !estadoOpt.trim().isEmpty()) {
+            String e = estadoOpt.trim().toUpperCase();
+            if (!e.equals("ACTIVO") && !e.equals("INACTIVO"))
+                return "estado debe ser ACTIVO o INACTIVO.";
+        }
+        return null;
+    }
+
+    /* ===================== CREATE ===================== */
+
+    /** Alta con ID automático (usa seq_predio). Retorna ID (>0) o -1 si falla. */
+    public int agregarPredioAuto(String nombrePredio,
+                                 double areaTotal,
+                                 String nombrePropietario,
+                                 String direccion,
+                                 double lat,
+                                 double lon,
+                                 int idLugar,
+                                 String estadoOpt /* puede ser null */) {
+
+        String err = validarCampos(nombrePredio, areaTotal, nombrePropietario, direccion, lat, lon, idLugar, estadoOpt);
+        if (err != null) { System.out.println("❌ " + err); return -1; }
+
+        Predio p = new Predio();
+        p.setNombre_predio(nombrePredio);
+        p.setArea_total(areaTotal);
+        p.setNombre_propietario(nombrePropietario);
+        p.setDireccion(direccion);
+        p.setCoordenadas_lat(lat);
+        p.setCoordenadas_lon(lon);
+        p.setId_lugar(idLugar);
+        p.setEstado(estadoOpt); // si viene null/blank, la BD pone ACTIVO
+
+        try {
+            int nuevoId = predioDAO.insertarPredioAuto(p);
+            System.out.println(nuevoId > 0
+                ? "✅ Predio creado con ID " + nuevoId + "."
+                : "❌ Error al crear el predio.");
+            return nuevoId;
+        } catch (IllegalArgumentException ex) {
+            System.out.println("❌ " + ex.getMessage());
+            return -1;
+        }
+    }
+
+    /* ===================== READ ===================== */
+
+    /** Lista para tabla mostrando además la etiqueta del lugar. */
+    public List<Predio> listarPrediosConLugar() {
+        List<Predio> lista = predioDAO.listarPrediosConLugar();
+        if (lista.isEmpty()) System.out.println("ℹ️ No hay predios registrados.");
+        else                 System.out.println("✅ Predios: " + lista.size());
+        return lista;
+    }
+
+    /* ===================== UPDATE ===================== */
+
+    public boolean actualizarPredio(int idPredio,
+                                    String nombrePredio,
+                                    double areaTotal,
+                                    String nombrePropietario,
+                                    String direccion,
+                                    double lat,
+                                    double lon,
+                                    int idLugar,
+                                    String estado) {
+
+        String err = validarCampos(nombrePredio, areaTotal, nombrePropietario, direccion, lat, lon, idLugar, estado);
+        if (err != null) { System.out.println("❌ " + err); return false; }
+
+        if (!predioDAO.existePredio(idPredio)) {
+            System.out.println("⚠️ No existe el predio con ID " + idPredio + ".");
             return false;
         }
 
-        // ✅ Verificar si el lugar de producción existe y está activo
-        if (!lugarProduccionDAO.existeLugarPro(idLugar)) {
-            System.out.println("❌ El lugar de producción con ID " + idLugar + " no existe.");
+        Predio p = new Predio();
+        p.setId_predio(idPredio);
+        p.setNombre_predio(nombrePredio);
+        p.setArea_total(areaTotal);
+        p.setNombre_propietario(nombrePropietario);
+        p.setDireccion(direccion);
+        p.setCoordenadas_lat(lat);
+        p.setCoordenadas_lon(lon);
+        p.setId_lugar(idLugar);
+        p.setEstado(estado);
+
+        try {
+            boolean ok = predioDAO.actualizarPredio(p);
+            System.out.println(ok ? "✅ Predio actualizado." : "❌ Error al actualizar el predio.");
+            return ok;
+        } catch (IllegalArgumentException ex) {
+            System.out.println("❌ " + ex.getMessage());
             return false;
         }
-
-        // Crear el objeto Predio
-        Predio predio = new Predio(
-                idPredio,
-                nombrePredio,
-                areaTotal,
-                nombrePropietario,
-                direccion,
-                coordenadasLat,
-                coordenadasLon,
-                idLugar,
-                estado
-        );
-
-        // Insertar usando el DAO
-        boolean resultado = predioDAO.insertarPredio(predio);
-
-        // Validar resultado
-        if (resultado) {
-            System.out.println("✅ Predio agregado correctamente (ID: " + idPredio + ")");
-        } else {
-            System.out.println("❌ Error al agregar el predio.");
-        }
-
-        return resultado;
-    }
-    
-    // En PlagaController
-    public boolean existeIdPredio(int idPredio) {
-        return predioDAO.existePredio(idPredio);
     }
 
-    /**
-     * Listar todos los predios
-     */
-    public List<Predio> listarPredios() {
-        List<Predio> predios = predioDAO.listarPredios();
+    /* ===================== DELETE (soft) ===================== */
 
-        if (predios.isEmpty()) {
-            System.out.println("⚠️ No hay predios registrados.");
-        } else {
-            System.out.println("✅ Se encontraron " + predios.size() + " predios.");
-        }
-
-        return predios;
-    }
-
-    /**
-     * Actualizar un predio existente
-     */
-    public boolean actualizarPredio(int idPredio, String nombrePredio, double areaTotal,
-                                    String nombrePropietario, String direccion,
-                                    double coordenadasLat, double coordenadasLon,int idLugar, String estado) {
-
-        // ✅ Verificar si el lugar existe y está activo
-        if (!lugarProduccionDAO.existeLugarPro(idLugar)) {
-            System.out.println("❌ El lugar de producción con ID " + idLugar + " no existe o no está activo. No se puede actualizar.");
+    /** Pone ESTADO = 'INACTIVO'. */
+    public boolean inactivarPredio(int idPredio) {
+        if (!predioDAO.existePredio(idPredio)) {
+            System.out.println("⚠️ No existe el predio con ID " + idPredio + ". Nada que inactivar.");
             return false;
         }
-
-        // Crear el objeto actualizado
-        Predio predio = new Predio();
-        predio.setId_predio(idPredio);
-        predio.setNombre_predio(nombrePredio);
-        predio.setArea_total(areaTotal);
-        predio.setNombre_propietario(nombrePropietario);
-        predio.setDireccion(direccion);
-        predio.setCoordenadas_lat(coordenadasLat);
-        predio.setCoordenadas_lon(coordenadasLon);
-        predio.setId_lugar(idLugar);
-        predio.setEstado(estado);
-
-        // Actualizar usando el DAO
-        boolean resultado = predioDAO.actualizarPredio(predio);
-
-        if (resultado) {
-            System.out.println("✅ Predio actualizado correctamente (ID: " + idPredio + ")");
-        } else {
-            System.out.println("❌ Error al actualizar el predio (ID: " + idPredio + ")");
-        }
-
-        return resultado;
+        boolean ok = predioDAO.eliminarPredio(idPredio);
+        System.out.println(ok ? "✅ Predio inactivado." : "❌ No se pudo inactivar el predio.");
+        return ok;
     }
 
-    /**
-     * Eliminar (inactivar) un predio
-     */
-    public boolean eliminarPredio(int idPredio) {
-        boolean resultado = predioDAO.eliminarPredio(idPredio);
+    /* ===================== EXISTS (wrappers) ===================== */
 
-        if (resultado) {
-            System.out.println("🗑️ Predio inactivado correctamente (ID: " + idPredio + ")");
-        } else {
-            System.out.println("❌ Error al inactivar el predio (ID: " + idPredio + ")");
-        }
-
-        return resultado;
-    }
+    public boolean existePredio(int idPredio) { return predioDAO.existePredio(idPredio); }
+    public boolean existeLugar(int idLugar)   { return predioDAO.existeLugar(idLugar); }
 }

@@ -132,14 +132,17 @@ public class TecnicoOficialController {
 
     /* ===================== DELETE / REACTIVAR ===================== */
 
-    public boolean eliminarTecnico(int numeroRegistro) {
+    public boolean desactivarTecnicoSeguro(int numeroRegistro) {
         if (!tecnicoOficialDAO.existeTecnico(numeroRegistro)) {
-            System.out.println("⚠️ No existe técnico con ID " + numeroRegistro + ". Nada que eliminar.");
+            System.out.println("⚠️ No existe técnico con ID " + numeroRegistro + ". Nada que inactivar.");
             return false;
         }
-        boolean ok = tecnicoOficialDAO.eliminarTecnico(numeroRegistro);
-        if (ok) System.out.println("✅ Técnico inactivado (ID: " + numeroRegistro + ").");
-        else    System.out.println("❌ Error al inactivar el técnico (ID: " + numeroRegistro + ").");
+        boolean ok = tecnicoOficialDAO.desactivarTecnicoSiNoReferenciado(numeroRegistro);
+        if (ok) {
+            System.out.println("✅ Técnico inactivado (ID: " + numeroRegistro + ").");
+        } else {
+            System.out.println("❌ No se pudo inactivar: el técnico está referenciado por inspecciones o hubo un error.");
+        }
         return ok;
     }
 

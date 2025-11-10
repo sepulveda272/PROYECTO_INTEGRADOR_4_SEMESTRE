@@ -3,11 +3,8 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/ADMIN/OneDrive/Documentos/NetBeansProjects/Programacion1_3LA/PROYECTO_INTEGRADOR_4_SEMESTRE/src/controlador/InspeccionFitosanitariaController.java</file>
-            <file>file:/C:/Users/ADMIN/OneDrive/Documentos/NetBeansProjects/Programacion1_3LA/PROYECTO_INTEGRADOR_4_SEMESTRE/src/vista/TablaInspeccion.java</file>
-            <file>file:/C:/Users/ADMIN/OneDrive/Documentos/NetBeansProjects/Programacion1_3LA/PROYECTO_INTEGRADOR_4_SEMESTRE/src/vista/ActualizarInspeccion.java</file>
-            <file>file:/C:/Users/ADMIN/OneDrive/Documentos/NetBeansProjects/Programacion1_3LA/PROYECTO_INTEGRADOR_4_SEMESTRE/src/vista/CrearInspeccion.java</file>
-            <file>file:/C:/Users/ADMIN/OneDrive/Documentos/NetBeansProjects/Programacion1_3LA/PROYECTO_INTEGRADOR_4_SEMESTRE/src/vista/ActualizarLote.java</file>
+            <file>file:/C:/Users/ADMIN/OneDrive/Documentos/NetBeansProjects/Programacion1_3LA/PROYECTO_INTEGRADOR_4_SEMESTRE/src/modelo/PlagaDAO.java</file>
+            <file>file:/C:/Users/ADMIN/OneDrive/Documentos/NetBeansProjects/Programacion1_3LA/PROYECTO_INTEGRADOR_4_SEMESTRE/src/modelo/ConexionBD.java</file>
         </group>
     </open-files>
 </project-private>

@@ -188,11 +188,11 @@ class TablaTecnico extends javax.swing.JFrame {
 
         int res = JOptionPane.showConfirmDialog(this, "¿Está seguro de inactivar este técnico?", "Confirmar", JOptionPane.YES_NO_OPTION);
         if (res == JOptionPane.YES_OPTION) {
-            if (tecnicoOficialController.eliminarTecnico(numeroRegistro)) {
+            if (tecnicoOficialController.desactivarTecnicoSeguro(numeroRegistro)) {
                 JOptionPane.showMessageDialog(this, "✅ Técnico inactivado.");
                 cargarTecnicos();
             } else {
-                JOptionPane.showMessageDialog(this, "❌ No se pudo inactivar el técnico.");
+                JOptionPane.showMessageDialog(this, "❌ No se pudo inactivar el técnico. Verifique dependencias (INSPECCION).");
             }
         }
     }//GEN-LAST:event_botoneliminarActionPerformed

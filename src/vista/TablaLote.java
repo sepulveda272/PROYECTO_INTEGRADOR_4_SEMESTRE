@@ -174,7 +174,7 @@ class TablaLote extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, "✅ Lote eliminado.");
                 cargarLotes();
             } else {
-                JOptionPane.showMessageDialog(this, "❌ No se pudo eliminar. Verifique dependencias (FK).");
+                JOptionPane.showMessageDialog(this, "❌ No se pudo eliminar. Verifique dependencias (INSPECCION).");
             }
         }
     }//GEN-LAST:event_botoneliminarActionPerformed

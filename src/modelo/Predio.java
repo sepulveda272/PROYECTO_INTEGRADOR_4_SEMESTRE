@@ -17,6 +17,7 @@ public class Predio {
     private double Coordenadas_lat; 
     private double Coordenadas_lon;
     private int Id_lugar;
+    private String Lugar_label;
     private String Estado;
 
     public Predio() {
@@ -71,6 +72,10 @@ public class Predio {
     public int getId_lugar() {
         return Id_lugar;
     }
+    
+    public String getLugar_label() {
+        return Lugar_label;
+    }
 
     public void setId_predio(int Id_predio) {
         this.Id_predio = Id_predio;
@@ -106,6 +111,10 @@ public class Predio {
 
     public void setId_lugar(int Id_lugar) {
         this.Id_lugar = Id_lugar;
+    }
+    
+    public void setLugar_label( String Lugar_label){
+        this.Lugar_label = Lugar_label;
     }
     
     public String[] split(String string) {

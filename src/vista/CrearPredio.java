@@ -5,29 +5,39 @@
 package vista;
 
 import controlador.PredioController;
-import javax.swing.JOptionPane;
+import modelo.LugarProduccion;
+import modelo.LugarProduccionDAO;
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
  * @author omaci
  */
 public class CrearPredio extends javax.swing.JFrame {
-    //private String idusuario;
     private Runnable onPredioGuardado;
-    
+    private final List<Integer> lugarProIds = new ArrayList<>();
 
     /**
      * Creates new form CrearCliente
      */
-    public CrearPredio(/*String idusuario,*/Runnable onPredioGuardado ) {
+    public CrearPredio(Runnable onPredioGuardado ) {
         initComponents();
         setLocationRelativeTo(null);
-        //this.idusuario=idusuario;
         this.onPredioGuardado = onPredioGuardado;
-        //System.out.println(idusuario);
+        cargarCombos();
     }
     
-    
+    private void cargarCombos() {
+        cboLugar.removeAllItems();
+        lugarProIds.clear();
+        LugarProduccionDAO tdao = new LugarProduccionDAO();
+        for (LugarProduccion p : tdao.listarLugaresConProductor()) {
+            cboLugar.addItem(p.getDepartamento());
+            lugarProIds.add(p.getId_lugar());
+        }
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -40,37 +50,28 @@ public class CrearPredio extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         NombrePropi = new javax.swing.JTextField();
-        id__predioo = new javax.swing.JTextField();
         AreaT = new javax.swing.JTextField();
         Direccionn = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         nombrePR = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
-        id__lugarPro = new javax.swing.JTextField();
         latitud = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
         longitud = new javax.swing.JTextField();
         jLabel8 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
+        cboLugar = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setBackground(new java.awt.Color(255, 238, 208));
 
         jPanel1.setBackground(new java.awt.Color(237, 218, 197));
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-        jPanel1.add(NombrePropi, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 170, 180, 40));
-
-        id__predioo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                id__prediooActionPerformed(evt);
-            }
-        });
-        jPanel1.add(id__predioo, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 90, 180, 40));
+        jPanel1.add(NombrePropi, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 90, 180, 40));
 
         AreaT.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -84,7 +85,7 @@ public class CrearPredio extends javax.swing.JFrame {
                 DireccionnActionPerformed(evt);
             }
         });
-        jPanel1.add(Direccionn, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 240, 180, 40));
+        jPanel1.add(Direccionn, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 260, 180, 40));
 
         jButton1.setText("Crear");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -99,65 +100,55 @@ public class CrearPredio extends javax.swing.JFrame {
                 nombrePRActionPerformed(evt);
             }
         });
-        jPanel1.add(nombrePR, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 90, 180, 40));
-
-        jLabel1.setText("Id predio");
-        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 70, -1, -1));
+        jPanel1.add(nombrePR, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 90, 180, 40));
 
         jLabel2.setText("Nombre del predio");
-        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 70, -1, -1));
+        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 70, -1, -1));
 
         jLabel3.setText("Area total (Hectarioas)");
         jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 150, -1, -1));
 
         jLabel4.setText("Nombre del propietario");
-        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 150, -1, -1));
+        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 70, -1, -1));
 
         jLabel5.setText("Direccion");
-        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 220, -1, -1));
+        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 240, -1, -1));
 
         jLabel6.setText("id lugar de produccion");
-        jPanel1.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 300, -1, -1));
-
-        id__lugarPro.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                id__lugarProActionPerformed(evt);
-            }
-        });
-        jPanel1.add(id__lugarPro, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 320, 180, 40));
+        jPanel1.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 320, -1, -1));
 
         latitud.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 latitudActionPerformed(evt);
             }
         });
-        jPanel1.add(latitud, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 240, 180, 40));
+        jPanel1.add(latitud, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 170, 180, 40));
 
         jLabel7.setText("Cordenadas (Latitud)");
-        jPanel1.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 220, -1, -1));
+        jPanel1.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 150, -1, -1));
 
         longitud.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 longitudActionPerformed(evt);
             }
         });
-        jPanel1.add(longitud, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 320, 180, 40));
+        jPanel1.add(longitud, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 260, 180, 40));
 
         jLabel8.setText("Cordenadas (Longitud)");
-        jPanel1.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 300, -1, -1));
+        jPanel1.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 240, -1, -1));
 
         jLabel12.setFont(new java.awt.Font("Cambria", 3, 48)); // NOI18N
         jLabel12.setForeground(new java.awt.Color(51, 153, 0));
         jLabel12.setText("Añadir predio");
-        jPanel1.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 10, 310, 60));
+        jPanel1.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 0, 310, 60));
+
+        jPanel1.add(cboLugar, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 340, 180, 40));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 497, Short.MAX_VALUE))
+            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 521, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -175,25 +166,12 @@ public class CrearPredio extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         try {
-            int idPredio = Integer.parseInt(id__predioo.getText().trim());
             String nombrePredio = nombrePR.getText().trim();
             double areaTotal = Double.parseDouble(AreaT.getText().trim());
             String nombrePropietario = NombrePropi.getText().trim();
             String direccion = Direccionn.getText().trim();
             double coordenadasLat = Double.parseDouble(latitud.getText().trim());
             double coordenadasLon = Double.parseDouble(longitud.getText().trim());
-            int idLugar = Integer.parseInt(id__lugarPro.getText().trim());
-            
-            
-            // Crear controlador
-            PredioController predioController = new PredioController();
-            
-            // === Validaciones de duplicados usando DAO (vía controller) ===
-            if (predioController.existeIdPredio(idPredio)) {
-                JOptionPane.showMessageDialog(this, "❌ Ya existe un predio con ID " + idPredio + ".");
-                id__predioo.requestFocus();
-                return;
-            }
             
             // Validar campos obligatorios
             if (nombrePredio.isEmpty() || nombrePropietario.isEmpty() || direccion.isEmpty()) {
@@ -202,12 +180,20 @@ public class CrearPredio extends javax.swing.JFrame {
                     "Campos vacíos", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-
             
+            int idxP = cboLugar.getSelectedIndex();
+            if (idxP < 0) {
+                JOptionPane.showMessageDialog(this, "Seleccione Lugar de produccion.");
+                return;
+            }
+            
+            int idLugar = lugarProIds.get(idxP);
+            
+            // Crear controlador
+            PredioController predioController = new PredioController();
 
             // Intentar agregar lugar
-            boolean exito = predioController.agregarPredio(
-                    idPredio, 
+            int exito = predioController.agregarPredioAuto(
                     nombrePredio, 
                     areaTotal, 
                     nombrePropietario, 
@@ -218,20 +204,12 @@ public class CrearPredio extends javax.swing.JFrame {
                     "ACTIVO"
             );
 
-            if (exito) {
-                JOptionPane.showMessageDialog(this, 
-                    "✅ Predio registrado correctamente.",
-                    "Éxito", JOptionPane.INFORMATION_MESSAGE);
-
-                if (onPredioGuardado != null) {
-                    onPredioGuardado.run(); // refrescar tabla
-                }
-
-                dispose(); // cerrar ventana
+            if (exito > 0) {
+                javax.swing.JOptionPane.showMessageDialog(this, "✅ Predio creada. ID " + exito);
+                if (onPredioGuardado != null) onPredioGuardado.run();
+                dispose();
             } else {
-                JOptionPane.showMessageDialog(this, 
-                    "❌ No se pudo registrar el predio. Verifique que el lugar de produccion exista y esté activo.",
-                    "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "❌ Error al crear el Predio.");
             }
             
         } catch (NumberFormatException e) {
@@ -251,17 +229,9 @@ public class CrearPredio extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_DireccionnActionPerformed
 
-    private void id__prediooActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_id__prediooActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_id__prediooActionPerformed
-
     private void nombrePRActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nombrePRActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_nombrePRActionPerformed
-
-    private void id__lugarProActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_id__lugarProActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_id__lugarProActionPerformed
 
     private void latitudActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_latitudActionPerformed
         // TODO add your handling code here:
@@ -325,10 +295,8 @@ public class CrearPredio extends javax.swing.JFrame {
     private javax.swing.JTextField AreaT;
     private javax.swing.JTextField Direccionn;
     private javax.swing.JTextField NombrePropi;
-    private javax.swing.JTextField id__lugarPro;
-    private javax.swing.JTextField id__predioo;
+    private javax.swing.JComboBox<String> cboLugar;
     private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

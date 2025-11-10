@@ -135,14 +135,14 @@ public class ProductorController {
 
     /* ====================== DELETE (soft delete) ===================== */
 
-    public boolean eliminarProductor(int idProductor) {
+    public boolean desactivarProductorSeguro(int idProductor) {
         if (!productorDAO.existeProductor(idProductor)) {
             System.out.println("⚠️ No existe productor con ID " + idProductor + ". Nada que eliminar.");
             return false;
         }
-        boolean ok = productorDAO.eliminarProductor(idProductor);
+        boolean ok = productorDAO.desactivarProductorSiNoReferenciado(idProductor);
         if (ok) System.out.println("✅ Productor inactivado (ID: " + idProductor + ").");
-        else    System.out.println("❌ Error al inactivar el productor (ID: " + idProductor + ").");
+        else    System.out.println("❌ Error al inactivar: el productor está referenciado por lugar de produccion o hubo un error.");
         return ok;
     }
 

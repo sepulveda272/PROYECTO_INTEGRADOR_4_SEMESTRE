@@ -22,10 +22,8 @@ class TablaPredio extends javax.swing.JFrame {
      */
     public TablaPredio(/*int idProductor*/) {
         initComponents();
-        predioController = new PredioController();
         setLocationRelativeTo(null);
-        /*this.idProductor = idProductor;
-        System.out.println(idProductor);*/
+        predioController = new PredioController();
         cargarPredio();
     }
     
@@ -42,7 +40,7 @@ class TablaPredio extends javax.swing.JFrame {
         modelo.addColumn("Estado");
 
         // Obtener lista desde el controlador
-        List<Predio> predios = predioController.listarPredios();
+        List<Predio> predios = predioController.listarPrediosConLugar();
         for (Predio p : predios) {
             Object[] fila = {
                 p.getId_predio(),
@@ -52,7 +50,7 @@ class TablaPredio extends javax.swing.JFrame {
                 p.getDireccion(),
                 p.getCoordenadas_lat(),
                 p.getCoordenadas_lon(),
-                p.getId_lugar(),
+                (p.getLugar_label()== null ? "" : p.getLugar_label()),
                 p.getEstado()
             };
             modelo.addRow(fila);
@@ -164,7 +162,8 @@ class TablaPredio extends javax.swing.JFrame {
         String direccion = jTable1.getValueAt(fila, 4).toString();
         double coordenadasLat = Double.parseDouble(jTable1.getValueAt(fila, 5).toString());
         double coordenadasLon = Double.parseDouble(jTable1.getValueAt(fila, 6).toString());
-        int idLugar = Integer.parseInt(jTable1.getValueAt(fila, 7).toString());
+        String nombreLu  = String.valueOf(jTable1.getModel().getValueAt(fila, 7));
+        //int idLugar = Integer.parseInt(jTable1.getValueAt(fila, 7).toString());
         String estado = jTable1.getValueAt(fila, 8).toString();
 
         // Abrir la vista de actualización
@@ -176,7 +175,7 @@ class TablaPredio extends javax.swing.JFrame {
                 direccion,
                 coordenadasLat,
                 coordenadasLon,
-                idLugar,
+                0,
                 estado,
                 this::cargarPredio
         );
@@ -185,17 +184,18 @@ class TablaPredio extends javax.swing.JFrame {
     }//GEN-LAST:event_botoneditarActionPerformed
 
     private void botoneliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botoneliminarActionPerformed
-        int filaSeleccionada = jTable1.getSelectedRow();
-        if (filaSeleccionada == -1) {
+        int fila = jTable1.getSelectedRow();
+        if (fila == -1) {
             JOptionPane.showMessageDialog(this, "Seleccione un predio para eliminar.");
             return;
         }
+        int modelRow = jTable1.convertRowIndexToModel(fila);
+        int idPredio = (Integer) jTable1.getModel().getValueAt(modelRow, 0);
 
-        int idPredio = Integer.parseInt(jTable1.getValueAt(filaSeleccionada, 0).toString());
-        int confirmacion = JOptionPane.showConfirmDialog(this, "¿Está seguro de eliminar este predio?", "Confirmar", JOptionPane.YES_NO_OPTION);
-        
+        int confirmacion = JOptionPane.showConfirmDialog(
+            this, "¿Está seguro de inactivar este predio?", "Confirmar", JOptionPane.YES_NO_OPTION);
         if (confirmacion == JOptionPane.YES_OPTION) {
-            predioController.eliminarPredio(idPredio);
+            predioController.inactivarPredio(idPredio);
             cargarPredio();
         }
     }//GEN-LAST:event_botoneliminarActionPerformed

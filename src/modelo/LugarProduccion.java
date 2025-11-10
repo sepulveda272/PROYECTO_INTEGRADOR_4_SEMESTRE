@@ -15,6 +15,7 @@ public class LugarProduccion {
     private String Vereda;
     private int Cantidad_maxima;
     private int Id_productor;
+    private String Productor_nombre;
 
     public LugarProduccion() {
     }
@@ -56,6 +57,10 @@ public class LugarProduccion {
     public void setId_lugar(int Id_lugar) {
         this.Id_lugar = Id_lugar;
     }
+    
+    public String getProductor_nombre() {
+        return Productor_nombre;
+    }
 
     public void setDepartamento(String Departamento) {
         this.Departamento = Departamento;
@@ -75,6 +80,10 @@ public class LugarProduccion {
 
     public void setId_productor(int Id_productor) {
         this.Id_productor = Id_productor;
+    }
+    
+    public void setProductor_nombre(String Productor_nombre) {
+        this.Productor_nombre = Productor_nombre;
     }
     
     public String[] split(String string) {

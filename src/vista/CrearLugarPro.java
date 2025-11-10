@@ -4,30 +4,37 @@
  */
 package vista;
 
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 import controlador.LugarProduccionController;
-import javax.swing.JOptionPane;
-
+import modelo.Productor;
+import modelo.ProductorDAO;
 /**
  *
  * @author omaci
  */
 public class CrearLugarPro extends javax.swing.JFrame {
-    //private String idusuario;
     private Runnable onLugarProGuardado;
-    
+    private final List<Integer> productorIds = new ArrayList<>();
 
-    /**
-     * Creates new form CrearCliente
-     */
-    public CrearLugarPro(/*String idusuario,*/Runnable onLugarProGuardado ) {
+    public CrearLugarPro(Runnable onLugarProGuardado) {
         initComponents();
         setLocationRelativeTo(null);
-        //this.idusuario=idusuario;
         this.onLugarProGuardado = onLugarProGuardado;
-        //System.out.println(idusuario);
+        cargarCombos();
     }
     
-    
+    private void cargarCombos() {
+        cboProductor.removeAllItems();
+        productorIds.clear();
+        // Técnicos (nombre completo)
+        ProductorDAO tdao = new ProductorDAO();
+        for (Productor p : tdao.listarProductoresActivos()) {
+            cboProductor.addItem(p.getPrimer_nombre());
+            productorIds.add(p.getId_productor());
+        }
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -40,47 +47,38 @@ public class CrearLugarPro extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         veredaa = new javax.swing.JTextField();
-        id__lugar = new javax.swing.JTextField();
         municipioo = new javax.swing.JTextField();
         cantidad = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         departamentoo = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
-        id__productor = new javax.swing.JTextField();
         jLabel12 = new javax.swing.JLabel();
+        cboProductor = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setBackground(new java.awt.Color(255, 238, 208));
 
         jPanel1.setBackground(new java.awt.Color(237, 218, 197));
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-        jPanel1.add(veredaa, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 180, 180, 40));
-
-        id__lugar.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                id__lugarActionPerformed(evt);
-            }
-        });
-        jPanel1.add(id__lugar, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 100, 180, 40));
+        jPanel1.add(veredaa, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 210, 180, 40));
 
         municipioo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 municipiooActionPerformed(evt);
             }
         });
-        jPanel1.add(municipioo, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 180, 180, 40));
+        jPanel1.add(municipioo, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 130, 180, 40));
 
         cantidad.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cantidadActionPerformed(evt);
             }
         });
-        jPanel1.add(cantidad, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 260, 180, 40));
+        jPanel1.add(cantidad, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 210, 180, 40));
 
         jButton1.setText("Crear");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -88,44 +86,36 @@ public class CrearLugarPro extends javax.swing.JFrame {
                 jButton1ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(220, 350, 170, 60));
+        jPanel1.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(220, 350, 180, 60));
 
         departamentoo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 departamentooActionPerformed(evt);
             }
         });
-        jPanel1.add(departamentoo, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 100, 180, 40));
-
-        jLabel1.setText("Id lugar");
-        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 80, -1, -1));
+        jPanel1.add(departamentoo, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 130, 180, 40));
 
         jLabel2.setText("Departamento");
-        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 80, -1, -1));
+        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 110, -1, -1));
 
         jLabel3.setText("Municipio");
-        jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 160, -1, -1));
+        jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 110, -1, -1));
 
         jLabel4.setText("Vereda");
-        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 160, -1, -1));
+        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 190, -1, -1));
 
         jLabel5.setText("Cantidad maxima");
-        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 240, -1, -1));
+        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 190, -1, -1));
 
-        jLabel6.setText("id Productor");
-        jPanel1.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 240, -1, -1));
-
-        id__productor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                id__productorActionPerformed(evt);
-            }
-        });
-        jPanel1.add(id__productor, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 260, 180, 40));
+        jLabel6.setText("Productor");
+        jPanel1.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(220, 270, -1, -1));
 
         jLabel12.setFont(new java.awt.Font("Cambria", 3, 48)); // NOI18N
         jLabel12.setForeground(new java.awt.Color(51, 153, 0));
         jLabel12.setText("Añadir lugar de produccion");
-        jPanel1.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 610, 60));
+        jPanel1.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 20, 610, 60));
+
+        jPanel1.add(cboProductor, new org.netbeans.lib.awtextra.AbsoluteConstraints(220, 290, 180, 40));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -151,68 +141,50 @@ public class CrearLugarPro extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         try {
-            int idLugar = Integer.parseInt(id__lugar.getText().trim());
-            String departamento = departamentoo.getText().trim();
-            String municipio = municipioo.getText().trim();
-            String vereda = veredaa.getText().trim();
-            int cantidadMaxima = Integer.parseInt(cantidad.getText().trim());
-            int idProductor = Integer.parseInt(id__productor.getText().trim());
+            String departamento  = departamentoo.getText().trim();
+            String municipio     = municipioo.getText().trim();
+            String vereda        = veredaa.getText().trim();
+            int cantidadMaxima   = Integer.parseInt(cantidad.getText().trim());
             
-            
-            // Crear controlador
-            LugarProduccionController lugarProduccionController = new LugarProduccionController();
-            
-            // === Validaciones de duplicados usando DAO (vía controller) ===
-            if (lugarProduccionController.existeIdLugarPro(idLugar)) {
-                JOptionPane.showMessageDialog(this, "❌ Ya existe un lugar de produccion con ID " + idLugar + ".");
-                id__lugar.requestFocus();
-                return;
-            }
-            // Validar campos obligatorios
+
             if (departamento.isEmpty() || municipio.isEmpty() || vereda.isEmpty()) {
-                JOptionPane.showMessageDialog(this, 
+                JOptionPane.showMessageDialog(this,
                     "Por favor completa todos los campos obligatorios.",
                     "Campos vacíos", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-
-            
-
-            // Intentar agregar lugar
-            boolean exito = lugarProduccionController.agregarLugarProduccion(
-                idLugar,
-                departamento,
-                municipio,
-                vereda,
-                cantidadMaxima,
-                idProductor
-            );
-
-            if (exito) {
-                JOptionPane.showMessageDialog(this, 
-                    "✅ Lugar de producción registrado correctamente.",
-                    "Éxito", JOptionPane.INFORMATION_MESSAGE);
-
-                if (onLugarProGuardado != null) {
-                    onLugarProGuardado.run(); // refrescar tabla
-                }
-
-                dispose(); // cerrar ventana
-            } else {
-                JOptionPane.showMessageDialog(this, 
-                    "❌ No se pudo registrar el lugar. Verifique que el productor exista y esté activo.",
-                    "Error", JOptionPane.ERROR_MESSAGE);
+            if (cantidadMaxima <= 0) {
+                JOptionPane.showMessageDialog(this, "La cantidad máxima debe ser > 0.");
+                return;
             }
             
+            int idxP = cboProductor.getSelectedIndex();
+            if (idxP < 0) {
+                JOptionPane.showMessageDialog(this, "Seleccione productor.");
+                return;
+            }
+            
+            int idProductor = productorIds.get(idxP);
+
+            LugarProduccionController ctrl = new LugarProduccionController();
+            
+            int nuevoId = ctrl.agregarLugarAuto(departamento,municipio,vereda,cantidadMaxima,idProductor);
+            if (nuevoId > 0) {
+                javax.swing.JOptionPane.showMessageDialog(this, "✅ Lugar de pproduccion creada. ID " + nuevoId);
+                if (onLugarProGuardado != null) onLugarProGuardado.run();
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "❌ Error al crear el lugar de produccion.");
+            }
+
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error: Los campos numéricos deben contener solo números.",
+            JOptionPane.showMessageDialog(this,
+                "Los campos numéricos (cantidad máxima deben ser números válidos.",
                 "Error de formato", JOptionPane.ERROR_MESSAGE);
-            System.out.println("❌ Error de número: " + e.getMessage());
+        } catch (IllegalArgumentException iae) {
+            JOptionPane.showMessageDialog(this, iae.getMessage(), "Validación", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, 
-                "Ocurrió un error al guardar el lugar de producción.",
-                "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Ocurrió un error al guardar el lugar.", "Error", JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
         }
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -221,17 +193,9 @@ public class CrearLugarPro extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_cantidadActionPerformed
 
-    private void id__lugarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_id__lugarActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_id__lugarActionPerformed
-
     private void departamentooActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_departamentooActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_departamentooActionPerformed
-
-    private void id__productorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_id__productorActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_id__productorActionPerformed
 
     /**
      * @param args the command line arguments
@@ -277,11 +241,9 @@ public class CrearLugarPro extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField cantidad;
+    private javax.swing.JComboBox<String> cboProductor;
     private javax.swing.JTextField departamentoo;
-    private javax.swing.JTextField id__lugar;
-    private javax.swing.JTextField id__productor;
     private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

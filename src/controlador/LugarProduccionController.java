@@ -6,7 +6,7 @@ package controlador;
 
 import modelo.LugarProduccion;
 import modelo.LugarProduccionDAO;
-import modelo.ProductorDAO;
+import java.util.ArrayList;
 import java.util.List;
 /**
  *
@@ -14,113 +14,134 @@ import java.util.List;
  */
 public class LugarProduccionController {
     private LugarProduccionDAO lugarProduccionDAO;
-    private ProductorDAO productorDAO;
-
     public LugarProduccionController() {
         this.lugarProduccionDAO = new LugarProduccionDAO();
-        this.productorDAO = new ProductorDAO();
     }
-    
-    public boolean agregarLugarProduccion(int idLugar, String departamento, String municipio, 
-                                       String vereda, int cantidadMaxima, int idProductor) {
 
-        // Evitar duplicados por ID
-        if (lugarProduccionDAO.existeLugarPro(idLugar)) {
-            System.out.println("❌ Ya existe un lugar de produccion con ID " + idLugar + ".");
+    /* ===================== VALIDACIONES (mínimas) ===================== */
+
+    private String validarCampos(String departamento, String municipio, String vereda,
+                                 Integer cantidadMaxima, Integer idProductor) {
+        if (departamento == null || departamento.trim().isEmpty()) return "El departamento es obligatorio.";
+        if (municipio == null || municipio.trim().isEmpty())       return "El municipio es obligatorio.";
+        if (vereda == null || vereda.trim().isEmpty())             return "La vereda es obligatoria.";
+        if (cantidadMaxima == null || cantidadMaxima <= 0)         return "La cantidad máxima debe ser > 0.";
+        if (idProductor == null || idProductor <= 0)               return "id_productor debe ser > 0.";
+        return null;
+    }
+
+    /* ===================== CREATE ===================== */
+
+    /** Alta con ID automático (usa seq_lugar). Retorna ID (>0) o -1 si falla. */
+    public int agregarLugarAuto(String departamento, String municipio, String vereda,
+                                int cantidadMaxima, int idProductor) {
+
+        String err = validarCampos(departamento, municipio, vereda, cantidadMaxima, idProductor);
+        if (err != null) { System.out.println("❌ " + err); return -1; }
+
+        LugarProduccion lp = new LugarProduccion();
+        lp.setDepartamento(departamento);
+        lp.setMunicipio(municipio);
+        lp.setVereda(vereda);
+        lp.setCantidad_maxima(cantidadMaxima);
+        lp.setId_productor(idProductor);
+
+        try {
+            int nuevoId = lugarProduccionDAO.insertarLugarAuto(lp);
+            if (nuevoId > 0) System.out.println("✅ Lugar creado con ID " + nuevoId + ".");
+            else             System.out.println("❌ Error al crear el lugar.");
+            return nuevoId;
+        } catch (IllegalArgumentException ex) {
+            System.out.println("❌ " + ex.getMessage());
+            return -1;
+        }
+    }
+
+    /** Alta con ID provisto. Retorna true si OK. */
+    public boolean agregarLugarConId(int idLugar, String departamento, String municipio, String vereda,
+                                     int cantidadMaxima, int idProductor) {
+        String err = validarCampos(departamento, municipio, vereda, cantidadMaxima, idProductor);
+        if (err != null) { System.out.println("❌ " + err); return false; }
+
+        LugarProduccion lp = new LugarProduccion();
+        lp.setId_lugar(idLugar);
+        lp.setDepartamento(departamento);
+        lp.setMunicipio(municipio);
+        lp.setVereda(vereda);
+        lp.setCantidad_maxima(cantidadMaxima);
+        lp.setId_productor(idProductor);
+
+        try {
+            boolean ok = lugarProduccionDAO.insertarLugar(lp);
+            System.out.println(ok ? "✅ Lugar creado." : "❌ Error al crear el lugar.");
+            return ok;
+        } catch (IllegalArgumentException ex) {
+            System.out.println("❌ " + ex.getMessage());
             return false;
         }
-        
-        if (!productorDAO.existeProductorActivo(idProductor)) {
-            System.out.println("❌ El productor con ID " + idProductor + " no existe o no está activo.");
-            return false;
-        }
-        
-        // Crear objeto con los datos
-        LugarProduccion lugar = new LugarProduccion(
-            idLugar,
-            departamento,
-            municipio,
-            vereda,
-            cantidadMaxima,
-            idProductor
-        );
-
-        // Insertar usando el DAO
-        boolean resultado = lugarProduccionDAO.insertarLugarProduccion(lugar);
-
-        // Validar resultado
-        if (resultado) {
-            System.out.println("✅ Lugar de producción agregado con éxito.");
-        } else {
-            System.out.println("❌ Error al agregar el lugar de producción.");
-        }
-        
-        return resultado;
-    }
-    
-    // En PlagaController
-    public boolean existeIdLugarPro(int idLugar) {
-        return lugarProduccionDAO.existeLugarPro(idLugar);
     }
 
-    /**
-     * Listar todos los lugares de producción
-     */
-    public List<LugarProduccion> listarLugaresProduccion() {
-        List<LugarProduccion> lugares = lugarProduccionDAO.listarLugaresProduccion();
+    /* ===================== READ ===================== */
 
-        if (lugares.isEmpty()) {
-            System.out.println("⚠️ No hay lugares de producción registrados.");
-        } else {
-            System.out.println("✅ Se encontraron " + lugares.size() + " lugares de producción.");
-        }
-
-        return lugares;
+    public List<LugarProduccion> listarLugares() {
+        List<LugarProduccion> lista = lugarProduccionDAO.listarLugaresProduccion();
+        if (lista.isEmpty()) System.out.println("ℹ️ No hay lugares registrados.");
+        else                 System.out.println("✅ Lugares: " + lista.size());
+        return lista;
     }
 
-    /**
-     * Actualizar un lugar de producción existente
-     */
-    public boolean actualizarLugarProduccion(int idLugar, String departamento, String municipio, 
-                                             String vereda, int cantidadMaxima, int idProductor) {
-        
-        if (!productorDAO.existeProductorActivo(idProductor)) {
-            System.out.println("❌ El productor con ID " + idProductor + " no existe o no está activo. No se puede actualizar.");
+    /** Para tablas/vistas que necesitan mostrar el nombre del productor. */
+    public List<LugarProduccion> listarLugaresConProductor() {
+        List<LugarProduccion> lista = lugarProduccionDAO.listarLugaresConProductor();
+        if (lista.isEmpty()) System.out.println("ℹ️ No hay lugares registrados.");
+        else                 System.out.println("✅ Lugares (con productor): " + lista.size());
+        return lista;
+    }
+
+    /* ===================== UPDATE ===================== */
+
+    public boolean actualizarLugar(int idLugar, String departamento, String municipio, String vereda,
+                                   int cantidadMaxima, int idProductor) {
+        String err = validarCampos(departamento, municipio, vereda, cantidadMaxima, idProductor);
+        if (err != null) { System.out.println("❌ " + err); return false; }
+
+        if (!lugarProduccionDAO.existeLugar(idLugar)) {
+            System.out.println("⚠️ No existe el lugar con ID " + idLugar + ".");
             return false;
         }
 
-        // Crear objeto con los datos actualizados
-        LugarProduccion lugar = new LugarProduccion();
-        lugar.setId_lugar(idLugar);
-        lugar.setDepartamento(departamento);
-        lugar.setMunicipio(municipio);
-        lugar.setVereda(vereda);
-        lugar.setCantidad_maxima(cantidadMaxima);
-        lugar.setId_productor(idProductor);
+        LugarProduccion lp = new LugarProduccion();
+        lp.setId_lugar(idLugar);
+        lp.setDepartamento(departamento);
+        lp.setMunicipio(municipio);
+        lp.setVereda(vereda);
+        lp.setCantidad_maxima(cantidadMaxima);
+        lp.setId_productor(idProductor);
 
-        // Llamar al DAO para actualizar
-        boolean resultado = lugarProduccionDAO.actualizarLugarProduccion(lugar);
-
-        // Mensaje de control
-        if (resultado) {
-            System.out.println("✅ Lugar de producción actualizado correctamente (ID: " + idLugar + ")");
-        } else {
-            System.out.println("❌ Error al actualizar el lugar de producción (ID: " + idLugar + ")");
+        try {
+            boolean ok = lugarProduccionDAO.actualizarLugar(lp);
+            System.out.println(ok ? "✅ Lugar actualizado." : "❌ Error al actualizar el lugar.");
+            return ok;
+        } catch (IllegalArgumentException ex) {
+            System.out.println("❌ " + ex.getMessage());
+            return false;
         }
-
-        return resultado;
     }
 
-    /**
-     * Eliminar un lugar de producción por ID
-     */
-    public void eliminarLugarProduccion(int idLugar) {
-        boolean resultado = lugarProduccionDAO.eliminarLugarProduccion(idLugar);
+    /* ===================== DELETE ===================== */
 
-        if (resultado) {
-            System.out.println("✅ Lugar de producción eliminado correctamente (ID: " + idLugar + ")");
-        } else {
-            System.out.println("❌ Error al eliminar el lugar de producción con ID: " + idLugar);
+    /**
+     * Elimina físicamente (DELETE). Si existe referencia por FK (p.ej., LOTE.ID_LUGAR),
+     * el DAO devolverá false y ya imprime un mensaje claro. Aquí solo propagamos resultado.
+     */
+    public boolean eliminarLugar(int idLugar) {
+        if (!lugarProduccionDAO.existeLugar(idLugar)) {
+            System.out.println("⚠️ No existe el lugar con ID " + idLugar + ". Nada que eliminar.");
+            return false;
         }
+        boolean ok = lugarProduccionDAO.eliminarLugar(idLugar);
+        if (ok) System.out.println("✅ Lugar eliminado (ID " + idLugar + ").");
+        else    System.out.println("❌ No se pudo eliminar: verifique dependencias (PREDIO O LOTE).");
+        return ok;
     }
 }

@@ -184,11 +184,11 @@ class Tabla extends javax.swing.JFrame {
 
         int res = JOptionPane.showConfirmDialog(this, "¿Está seguro de inactivar este productor?", "Confirmar", JOptionPane.YES_NO_OPTION);
         if (res == JOptionPane.YES_OPTION) {
-            if (productorController.eliminarProductor(idProductor)) {
+            if (productorController.desactivarProductorSeguro(idProductor)) {
                 JOptionPane.showMessageDialog(this, "✅ Productor inactivado.");
                 cargarProductores();
             } else {
-                JOptionPane.showMessageDialog(this, "❌ No se pudo inactivar el productor.");
+                JOptionPane.showMessageDialog(this, "❌ No se pudo inactivar el técnico. Verifique dependencias (LUGAR DE PRODUCCION).");
             }
         }
     }//GEN-LAST:event_botoneliminarActionPerformed

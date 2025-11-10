@@ -15,17 +15,12 @@ import modelo.LugarProduccion;
  * @author ESTUDIANTE
  */
 class TablaLugarPr extends javax.swing.JFrame {
-     private LugarProduccionController lugarProduccionController;
-     //private int idProductor;
-    /**
-     * Creates new form Tabla
-     */
-    public TablaLugarPr(/*int idProductor*/) {
+    private LugarProduccionController lugarProduccionController;
+
+    public TablaLugarPr() {
         initComponents();
-        lugarProduccionController = new LugarProduccionController();
         setLocationRelativeTo(null);
-        /*this.idProductor = idProductor;
-        System.out.println(idProductor);*/
+        lugarProduccionController = new LugarProduccionController();
         cargarLugaresPr();
     }
     
@@ -36,10 +31,9 @@ class TablaLugarPr extends javax.swing.JFrame {
         modelo.addColumn("Municipio");
         modelo.addColumn("Vereda");
         modelo.addColumn("Cantidad Máxima");
-        modelo.addColumn("ID Productor");
-        
+        modelo.addColumn("Productor");     // ← nombre completo
 
-        List<LugarProduccion> lugares = lugarProduccionController.listarLugaresProduccion();
+        List<LugarProduccion> lugares = lugarProduccionController.listarLugaresConProductor();
         for (LugarProduccion p : lugares) {
             Object[] fila = {
                 p.getId_lugar(),
@@ -47,7 +41,7 @@ class TablaLugarPr extends javax.swing.JFrame {
                 p.getMunicipio(),
                 p.getVereda(),
                 p.getCantidad_maxima(),
-                p.getId_productor()
+                (p.getProductor_nombre() == null ? "" : p.getProductor_nombre())
             };
             modelo.addRow(fila);
         }
@@ -141,46 +135,47 @@ class TablaLugarPr extends javax.swing.JFrame {
     }//GEN-LAST:event_botoncrearActionPerformed
 
     private void botoneditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botoneditarActionPerformed
-        int fila = jTable1.getSelectedRow();
-
-        if (fila == -1) {
+        int viewRow = jTable1.getSelectedRow();
+        if (viewRow == -1) {
             JOptionPane.showMessageDialog(this, "Seleccione un lugar de producción para editar.");
             return;
         }
-        int idLugar = Integer.parseInt(jTable1.getValueAt(fila, 0).toString());
-        String departamento = jTable1.getValueAt(fila, 1).toString();
-        String municipio = jTable1.getValueAt(fila, 2).toString();
-        String vereda = jTable1.getValueAt(fila, 3).toString();
-        int cantidadMaxima = Integer.parseInt(jTable1.getValueAt(fila, 4).toString());
-        int idProductor = Integer.parseInt(jTable1.getValueAt(fila, 5).toString());
+        int row = jTable1.convertRowIndexToModel(viewRow);
+        int idLugar         = Integer.parseInt(jTable1.getModel().getValueAt(row, 0).toString());
+        String departamento = jTable1.getModel().getValueAt(row, 1).toString();
+        String municipio    = jTable1.getModel().getValueAt(row, 2).toString();
+        String vereda       = jTable1.getModel().getValueAt(row, 3).toString();
+        int cantidadMaxima  = Integer.parseInt(jTable1.getModel().getValueAt(row, 4).toString());
+        String nombrePro  = String.valueOf(jTable1.getModel().getValueAt(row, 5));
 
-        // Abrir la vista de actualización
         ActualizarLugarPro actualizar = new ActualizarLugarPro(
-            idLugar,
-            departamento,
-            municipio,
-            vereda,
-            cantidadMaxima,
-            idProductor,
-            this::cargarLugaresPr
+            idLugar, departamento, municipio, vereda, cantidadMaxima,0, this::cargarLugaresPr
         );
-
         actualizar.setVisible(true);
     }//GEN-LAST:event_botoneditarActionPerformed
 
     private void botoneliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botoneliminarActionPerformed
-        int filaSeleccionada = jTable1.getSelectedRow();
-        if (filaSeleccionada == -1) {
+        int viewRow = jTable1.getSelectedRow();
+        if (viewRow == -1) {
             JOptionPane.showMessageDialog(this, "Seleccione un lugar de producción para eliminar.");
             return;
         }
+        int row = jTable1.convertRowIndexToModel(viewRow);
+        int idLugar = Integer.parseInt(jTable1.getModel().getValueAt(row, 0).toString());
 
-        int idLugar = Integer.parseInt(jTable1.getValueAt(filaSeleccionada, 0).toString());
-        int confirmacion = JOptionPane.showConfirmDialog(this, "¿Está seguro de eliminar este lugar de produccion?", "Confirmar", JOptionPane.YES_NO_OPTION);
-        
-        if (confirmacion == JOptionPane.YES_OPTION) {
-            lugarProduccionController.eliminarLugarProduccion(idLugar);
-            cargarLugaresPr();
+        int res = JOptionPane.showConfirmDialog(
+            this, "¿Está seguro de eliminar este lugar de producción?", 
+            "Confirmar", JOptionPane.YES_NO_OPTION
+        );
+        if (res == JOptionPane.YES_OPTION) {
+            boolean ok = lugarProduccionController.eliminarLugar(idLugar);
+            if (ok) {
+                JOptionPane.showMessageDialog(this, "✅ Lugar eliminado.");
+                cargarLugaresPr();
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                    "❌ No se pudo eliminar. Verifique dependencias (PREDIO O LOTE).");
+            }
         }
     }//GEN-LAST:event_botoneliminarActionPerformed
 

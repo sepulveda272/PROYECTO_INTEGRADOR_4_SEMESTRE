@@ -239,12 +239,39 @@ public class ProductorDAO {
     }
 
     /* ===================== DELETE (soft) ===================== */
-    public boolean eliminarProductor(int idProductor) {
-        String sql = "UPDATE PRODUCTOR SET ESTADO = 'INACTIVO' WHERE ID_PRODUCTOR = ?";
+    /** Lugares asociados directamente al productor. FK directa: LUGAR_PRODUCCION(ID_PRODUCTOR). */
+    private int contarLugaresPorProductor(int idProductor) {
+        final String sql = "SELECT COUNT(*) FROM LUGAR_PRODUCCION WHERE ID_PRODUCTOR = ?";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setInt(1, idProductor);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        } catch (SQLException e) { e.printStackTrace(); return -1; }
+    }
+    
+    public boolean desactivarProductorSiNoReferenciado(int idProductor) {
+        if (!existeProductor(idProductor)) {
+            System.err.println("⚠️ No existe el productor con ID " + idProductor + ".");
+            return false;
+        }
+
+        int lugares = contarLugaresPorProductor(idProductor);
+        if (lugares < 0) { System.err.println("Error verificando lugares."); return false; }
+        if (lugares > 0) {
+            System.err.println("❌ No se puede inactivar: el productor tiene " + lugares + " lugar(es) de producción.");
+            return false;
+        }
+
+        final String sql = "UPDATE PRODUCTOR SET ESTADO = 'INACTIVO' WHERE ID_PRODUCTOR = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, idProductor);
             return ps.executeUpdate() > 0;
-        } catch (SQLException e) { e.printStackTrace(); return false; }
+        } catch (SQLException e) {
+            System.err.println("Error al inactivar productor: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /* ===================== EXISTS ===================== */
