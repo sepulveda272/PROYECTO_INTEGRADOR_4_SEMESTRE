@@ -22,9 +22,7 @@ public class CrearProductor extends javax.swing.JFrame {
     public CrearProductor(/*String idusuario,*/Runnable onProductorGuardado ) {
         initComponents();
         setLocationRelativeTo(null);
-        //this.idusuario=idusuario;
         this.onProductorGuardado = onProductorGuardado;
-        //System.out.println(idusuario);
     }
 
     /**
@@ -38,8 +36,6 @@ public class CrearProductor extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         PriNombre = new javax.swing.JTextField();
-        id__productor = new javax.swing.JTextField();
-        tipoCedula = new javax.swing.JTextField();
         segNombre = new javax.swing.JTextField();
         direccion = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
@@ -49,7 +45,6 @@ public class CrearProductor extends javax.swing.JFrame {
         segApellido = new javax.swing.JTextField();
         telefono = new javax.swing.JTextField();
         correoo = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
@@ -61,41 +56,28 @@ public class CrearProductor extends javax.swing.JFrame {
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
+        tipocedula = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setBackground(new java.awt.Color(255, 238, 208));
 
         jPanel1.setBackground(new java.awt.Color(237, 218, 197));
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-        jPanel1.add(PriNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 160, 180, 40));
-
-        id__productor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                id__productorActionPerformed(evt);
-            }
-        });
-        jPanel1.add(id__productor, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 90, 180, 40));
-
-        tipoCedula.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tipoCedulaActionPerformed(evt);
-            }
-        });
-        jPanel1.add(tipoCedula, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 160, 180, 40));
+        jPanel1.add(PriNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 160, 180, 40));
 
         segNombre.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 segNombreActionPerformed(evt);
             }
         });
-        jPanel1.add(segNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 240, 180, 40));
+        jPanel1.add(segNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 160, 180, 40));
 
         direccion.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 direccionActionPerformed(evt);
             }
         });
-        jPanel1.add(direccion, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 320, 180, 40));
+        jPanel1.add(direccion, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 320, 180, 40));
 
         jButton1.setText("Crear");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -103,35 +85,35 @@ public class CrearProductor extends javax.swing.JFrame {
                 jButton1ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 530, 170, 60));
+        jPanel1.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 460, 170, 60));
 
         cedula.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cedulaActionPerformed(evt);
             }
         });
-        jPanel1.add(cedula, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 90, 180, 40));
+        jPanel1.add(cedula, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 90, 180, 40));
 
         priApellido.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 priApellidoActionPerformed(evt);
             }
         });
-        jPanel1.add(priApellido, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 240, 180, 40));
+        jPanel1.add(priApellido, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 240, 180, 40));
 
         contraseña.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 contraseñaActionPerformed(evt);
             }
         });
-        jPanel1.add(contraseña, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 470, 180, 40));
+        jPanel1.add(contraseña, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 390, 180, 40));
 
         segApellido.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 segApellidoActionPerformed(evt);
             }
         });
-        jPanel1.add(segApellido, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 320, 180, 40));
+        jPanel1.add(segApellido, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 240, 180, 40));
 
         telefono.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -145,45 +127,50 @@ public class CrearProductor extends javax.swing.JFrame {
                 correooActionPerformed(evt);
             }
         });
-        jPanel1.add(correoo, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 390, 180, 40));
-
-        jLabel1.setText("Id del productor");
-        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 70, -1, -1));
+        jPanel1.add(correoo, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 320, 180, 40));
 
         jLabel2.setText("Numero de identificacion");
-        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 70, -1, -1));
+        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 70, -1, -1));
 
         jLabel3.setText("Tipo de identificacion");
-        jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 140, -1, -1));
+        jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 70, -1, -1));
 
         jLabel4.setText("Primer nombre");
-        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 140, -1, -1));
+        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 140, -1, -1));
 
         jLabel5.setText("Segundo nombre");
-        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 220, -1, -1));
+        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 140, -1, -1));
 
         jLabel6.setText("Primer apellido");
-        jPanel1.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 220, -1, -1));
+        jPanel1.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 220, -1, -1));
 
         jLabel7.setText("Segundo Apellido");
-        jPanel1.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 300, -1, -1));
+        jPanel1.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 220, -1, -1));
 
         jLabel8.setText("Direccion");
-        jPanel1.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 300, -1, -1));
+        jPanel1.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 300, -1, -1));
 
         jLabel9.setText("Celular");
         jPanel1.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 370, -1, -1));
 
         jLabel10.setText("Correo");
-        jPanel1.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 370, -1, -1));
+        jPanel1.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 300, -1, -1));
 
         jLabel11.setText("Contraseña");
-        jPanel1.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 450, -1, -1));
+        jPanel1.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 370, -1, -1));
 
         jLabel12.setFont(new java.awt.Font("Cambria", 3, 48)); // NOI18N
         jLabel12.setForeground(new java.awt.Color(51, 153, 0));
         jLabel12.setText("Añadir productor");
         jPanel1.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 0, 390, 60));
+
+        tipocedula.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Seleccione una opcion...", "CC", "CE", "PA", "NIT" }));
+        tipocedula.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tipocedulaActionPerformed(evt);
+            }
+        });
+        jPanel1.add(tipocedula, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 90, 180, 40));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -193,24 +180,17 @@ public class CrearProductor extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 612, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void tipoCedulaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tipoCedulaActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_tipoCedulaActionPerformed
-
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         try {
-            int idProductor = Integer.parseInt(id__productor.getText().trim());
             long numeroIdentificacion = Long.parseLong(cedula.getText().trim());
             long celular = Long.parseLong(telefono.getText().trim());
-            String tipoIdentificacion = tipoCedula.getText().trim();
+            String tipoIdentificacion = (String) tipocedula.getSelectedItem();
             String primerNombre = PriNombre.getText().trim();
             String segundoNombre = segNombre.getText().trim();
             String primerApellido = priApellido.getText().trim();
@@ -219,53 +199,29 @@ public class CrearProductor extends javax.swing.JFrame {
             String correo = correoo.getText().trim();
             String password = contraseña.getText().trim();
             
-            ProductorController productorController = new ProductorController();
-            
-            // === Validaciones de duplicados usando DAO (vía controller) ===
-            if (productorController.existeIdProductor(idProductor)) {
-                JOptionPane.showMessageDialog(this, "❌ Ya existe un productor con ID " + idProductor + ".");
-                id__productor.requestFocus();
-                return;
-            }
-            
-            if (tipoIdentificacion.isEmpty() || primerNombre.isEmpty() || primerApellido.isEmpty() ||
-                direccionTxt.isEmpty() || correo.isEmpty() || password.isEmpty()) {
+            ProductorController c = new ProductorController();
 
+            if (tipoIdentificacion.isEmpty() || primerNombre.isEmpty() || primerApellido.isEmpty()
+                    || direccionTxt.isEmpty() || correo.isEmpty() || password.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Por favor completa todos los campos obligatorios.");
                 return;
             }
-            
-            
-            productorController.agregarProductor(
-                    idProductor,
-                    numeroIdentificacion,
-                    tipoIdentificacion,
-                    primerNombre,
-                    segundoNombre,
-                    primerApellido,
-                    segundoApellido,
-                    direccionTxt,
-                    celular,
-                    correo,
-                    password
-            );
-            
-            JOptionPane.showMessageDialog(this, "✅ Productor creado exitosamente.");
-            System.out.println("Productor creado exitosamente.");
 
-            // Refrescar la tabla si hay callback
-            if (onProductorGuardado != null) {
-                onProductorGuardado.run();
+            int nuevoId = c.agregarProductorAuto(numeroIdentificacion, tipoIdentificacion, primerNombre, segundoNombre, primerApellido, segundoApellido, direccionTxt, celular, correo, password
+            );
+
+            if (nuevoId > 0) {
+                JOptionPane.showMessageDialog(this, "✅ Productor creado con ID " + nuevoId + ".");
+                if (onProductorGuardado != null) onProductorGuardado.run(); // refresca tabla
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "❌ Error al crear el Productor.");
             }
 
-            // Cerrar la ventana
-            dispose();
-            
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Error: Los campos numéricos deben contener solo números.");
-            System.out.println("❌ Error: número inválido - " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Cédula y celular deben ser numéricos.");
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Ocurrió un error al guardar el productor.");
+            JOptionPane.showMessageDialog(this, "Ocurrió un error al guardar el Productor.");
             ex.printStackTrace();
         }
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -273,10 +229,6 @@ public class CrearProductor extends javax.swing.JFrame {
     private void segNombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_segNombreActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_segNombreActionPerformed
-
-    private void id__productorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_id__productorActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_id__productorActionPerformed
 
     private void direccionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_direccionActionPerformed
         // TODO add your handling code here:
@@ -305,6 +257,10 @@ public class CrearProductor extends javax.swing.JFrame {
     private void correooActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_correooActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_correooActionPerformed
+
+    private void tipocedulaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tipocedulaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tipocedulaActionPerformed
 
     /**
      * @param args the command line arguments
@@ -348,9 +304,7 @@ public class CrearProductor extends javax.swing.JFrame {
     private javax.swing.JTextField contraseña;
     private javax.swing.JTextField correoo;
     private javax.swing.JTextField direccion;
-    private javax.swing.JTextField id__productor;
     private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
@@ -367,6 +321,6 @@ public class CrearProductor extends javax.swing.JFrame {
     private javax.swing.JTextField segApellido;
     private javax.swing.JTextField segNombre;
     private javax.swing.JTextField telefono;
-    private javax.swing.JTextField tipoCedula;
+    private javax.swing.JComboBox<String> tipocedula;
     // End of variables declaration//GEN-END:variables
 }

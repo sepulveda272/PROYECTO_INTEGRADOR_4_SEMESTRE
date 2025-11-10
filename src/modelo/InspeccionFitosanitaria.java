@@ -14,8 +14,9 @@ public class InspeccionFitosanitaria {
     private int Plantas_afectadas;
     private String Fecha_inspeccion;
     private String Nivel_alerta;  // p.ej.: BAJO, MEDIO, ALTO
-    private int Id_lote;
+    private int Numero_lote;
     private int Id_tecnico;
+    private String nombre_tecnico;
 
     public InspeccionFitosanitaria() {
     }
@@ -25,14 +26,14 @@ public class InspeccionFitosanitaria {
                                    int Plantas_afectadas,
                                    String Fecha_inspeccion,
                                    String Nivel_alerta,
-                                   int Id_lote,
+                                   int Numero_lote,
                                    int Id_tecnico) {
         this.Id_inspeccion = Id_inspeccion;
         this.Plantas_revisadas = Plantas_revisadas;
         this.Plantas_afectadas = Plantas_afectadas;
         this.Fecha_inspeccion = Fecha_inspeccion;
         this.Nivel_alerta = Nivel_alerta;
-        this.Id_lote = Id_lote;
+        this.Numero_lote = Numero_lote;
         this.Id_tecnico = Id_tecnico;
     }
 
@@ -56,12 +57,20 @@ public class InspeccionFitosanitaria {
         return Nivel_alerta;
     }
 
-    public int getId_lote() {
-        return Id_lote;
+    public int getNumero_lote() {
+        return Numero_lote;
     }
 
     public int getId_tecnico() {
         return Id_tecnico;
+    }
+    
+    public String getNombre_tecnico() { 
+        return nombre_tecnico; 
+    }
+    
+    public void setNombre_tecnico(String nombre_tecnico) {
+        this.nombre_tecnico = nombre_tecnico; 
     }
 
     public void setId_inspeccion(int Id_inspeccion) {
@@ -84,8 +93,8 @@ public class InspeccionFitosanitaria {
         this.Nivel_alerta = Nivel_alerta;
     }
 
-    public void setId_lote(int Id_lote) {
-        this.Id_lote = Id_lote;
+    public void setNumero_lote(int Numero_lote) {
+        this.Numero_lote = Numero_lote;
     }
 
     public void setId_tecnico(int Id_tecnico) {

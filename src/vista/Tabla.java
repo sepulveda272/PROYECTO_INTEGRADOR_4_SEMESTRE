@@ -24,8 +24,6 @@ class Tabla extends javax.swing.JFrame {
         initComponents();
         productorController = new ProductorController();
         setLocationRelativeTo(null);
-        /*this.idProductor = idProductor;
-        System.out.println(idProductor);*/
         cargarProductores();
     }
     
@@ -178,18 +176,20 @@ class Tabla extends javax.swing.JFrame {
     }//GEN-LAST:event_botoneditarActionPerformed
 
     private void botoneliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botoneliminarActionPerformed
-        int filaSeleccionada = jTable1.getSelectedRow();
-        if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(this, "Seleccione un productor para eliminar.");
-            return;
-        }
+        int viewRow = jTable1.getSelectedRow();
+        if (viewRow == -1) { JOptionPane.showMessageDialog(this, "Seleccione un productor para eliminar."); return; }
 
-        int idProductor = Integer.parseInt(jTable1.getValueAt(filaSeleccionada, 0).toString());
-        int confirmacion = JOptionPane.showConfirmDialog(this, "¿Está seguro de eliminar este productor?", "Confirmar", JOptionPane.YES_NO_OPTION);
-        
-        if (confirmacion == JOptionPane.YES_OPTION) {
-            productorController.eliminarProductor(idProductor);
-            cargarProductores();
+        int row = jTable1.convertRowIndexToModel(viewRow);
+        int idProductor = Integer.parseInt(jTable1.getModel().getValueAt(row, 0).toString());
+
+        int res = JOptionPane.showConfirmDialog(this, "¿Está seguro de inactivar este productor?", "Confirmar", JOptionPane.YES_NO_OPTION);
+        if (res == JOptionPane.YES_OPTION) {
+            if (productorController.eliminarProductor(idProductor)) {
+                JOptionPane.showMessageDialog(this, "✅ Productor inactivado.");
+                cargarProductores();
+            } else {
+                JOptionPane.showMessageDialog(this, "❌ No se pudo inactivar el productor.");
+            }
         }
     }//GEN-LAST:event_botoneliminarActionPerformed
 

@@ -4,57 +4,48 @@
  */
 package vista;
 
-import controlador.TecnicoOficialController;
-import javax.swing.JOptionPane;
-import javax.swing.table.DefaultTableModel;
+import controlador.LoteController;
+import modelo.Lote;
+import javax.swing.*;
+import javax.swing.table.*;
 import java.util.List;
-import modelo.TecnicoOficial;
 
 /**
  *
  * @author ESTUDIANTE
  */
-class TablaTecnico extends javax.swing.JFrame {
-    private TecnicoOficialController tecnicoOficialController;
-     //private int idProductor;
-    /**
-     * Creates new form Tabla
-     */
-    public TablaTecnico(/*int idProductor*/) {
+class TablaLote extends javax.swing.JFrame {
+    private LoteController loteController;
+
+    public TablaLote() {
         initComponents();
-        tecnicoOficialController = new TecnicoOficialController();
+        loteController = new LoteController();
         setLocationRelativeTo(null);
-        cargarTecnicos();
+        cargarLotes();
     }
     
-     private void cargarTecnicos() {
+     private void cargarLotes() {
         DefaultTableModel modelo = new DefaultTableModel();
-        modelo.addColumn("Numero Registro");
-        modelo.addColumn("Número Identificación");
-        modelo.addColumn("Tipo Identificación");
-        modelo.addColumn("Primer Nombre");
-        modelo.addColumn("Segundo Nombre");
-        modelo.addColumn("Primer Apellido");
-        modelo.addColumn("Segundo Apellido");
-        modelo.addColumn("Dirección");
-        modelo.addColumn("Celular");
-        modelo.addColumn("Correo");
-        modelo.addColumn("Estado");
+        modelo.addColumn("N° Lote");
+        modelo.addColumn("Área total");
+        modelo.addColumn("Área siembra");
+        modelo.addColumn("Estado fenológico");
+        modelo.addColumn("Fecha siembra");
+        modelo.addColumn("Fecha eliminación");
+        modelo.addColumn("ID Cultivo");
+        modelo.addColumn("ID Lugar");
 
-        List<TecnicoOficial> tecnicos = tecnicoOficialController.listarTecnicos();
-        for (TecnicoOficial p : tecnicos) {
+        List<Lote> lotes = loteController.listarLotes();
+        for (Lote l : lotes) {
             Object[] fila = {
-                p.getNumero_registro(),
-                p.getNumero_identificacion(),
-                p.getTipo_identificacion(),
-                p.getPrimer_nombre(),
-                p.getSegundo_nombre(),
-                p.getPrimer_apellido(),
-                p.getSegundo_apellido(),
-                p.getDireccion(),
-                p.getCelular(),
-                p.getCorreo(),
-                p.getEstado()
+                l.getNumero_lote(),
+                l.getArea_total(),
+                l.getArea_siembra(),
+                l.getEstado_fenologico(),
+                l.getFecha_siembra(),     // "yyyy-MM-dd"
+                l.getFecha_eliminacion(), // puede ser null
+                l.getId_cultivo(),
+                l.getId_lugar()
             };
             modelo.addRow(fila);
         }
@@ -97,7 +88,7 @@ class TablaTecnico extends javax.swing.JFrame {
         ));
         jScrollPane1.setViewportView(jTable1);
 
-        jPanel1.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 107, 840, 340));
+        jPanel1.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 87, 830, 360));
 
         botoncrear.setText("Crear");
         botoncrear.addActionListener(new java.awt.event.ActionListener() {
@@ -105,7 +96,7 @@ class TablaTecnico extends javax.swing.JFrame {
                 botoncrearActionPerformed(evt);
             }
         });
-        jPanel1.add(botoncrear, new org.netbeans.lib.awtextra.AbsoluteConstraints(590, 460, 270, 40));
+        jPanel1.add(botoncrear, new org.netbeans.lib.awtextra.AbsoluteConstraints(580, 460, 270, 40));
 
         botoneditar.setText("Editar");
         botoneditar.addActionListener(new java.awt.event.ActionListener() {
@@ -113,7 +104,7 @@ class TablaTecnico extends javax.swing.JFrame {
                 botoneditarActionPerformed(evt);
             }
         });
-        jPanel1.add(botoneditar, new org.netbeans.lib.awtextra.AbsoluteConstraints(310, 460, 270, 40));
+        jPanel1.add(botoneditar, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 460, 270, 40));
 
         botoneliminar.setText("Eliminar");
         botoneliminar.addActionListener(new java.awt.event.ActionListener() {
@@ -125,74 +116,65 @@ class TablaTecnico extends javax.swing.JFrame {
 
         jLabel1.setFont(new java.awt.Font("Cambria", 3, 48)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel1.setText("Tecnicos oficiales");
-        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(250, 20, 400, 60));
+        jLabel1.setText("Lotes");
+        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 10, 120, 60));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 882, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 884, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 516, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 523, Short.MAX_VALUE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void botoncrearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botoncrearActionPerformed
-        CrearTecnico crear = new CrearTecnico(this::cargarTecnicos);
+        CrearLote crear = new CrearLote(this::cargarLotes);
         crear.setVisible(true);
     }//GEN-LAST:event_botoncrearActionPerformed
 
     private void botoneditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botoneditarActionPerformed
-        int fila = jTable1.getSelectedRow();
-        if (fila == -1) { JOptionPane.showMessageDialog(this, "Seleccione un técnico para editar."); return; }
+        int viewRow = jTable1.getSelectedRow();
+        if (viewRow == -1) { JOptionPane.showMessageDialog(this, "Seleccione un lote para editar."); return; }
 
-        // Por si hay sorter activo
-        int modelRow = jTable1.convertRowIndexToModel(fila);
-        DefaultTableModel m = (DefaultTableModel) jTable1.getModel();
+        int row = jTable1.convertRowIndexToModel(viewRow);
+        int numeroLote      = Integer.parseInt(jTable1.getModel().getValueAt(row, 0).toString());
+        double areaTotal    = Double.parseDouble(jTable1.getModel().getValueAt(row, 1).toString());
+        double areaSiembra  = Double.parseDouble(jTable1.getModel().getValueAt(row, 2).toString());
+        String estado       = String.valueOf(jTable1.getModel().getValueAt(row, 3));
+        String fSiembra     = String.valueOf(jTable1.getModel().getValueAt(row, 4));
+        Object fElimObj     = jTable1.getModel().getValueAt(row, 5);
+        String fEliminacion = (fElimObj == null) ? "" : String.valueOf(fElimObj);
+        int idCultivo       = Integer.parseInt(jTable1.getModel().getValueAt(row, 6).toString());
+        int idLugar         = Integer.parseInt(jTable1.getModel().getValueAt(row, 7).toString());
 
-        int numeroRegistro       = Integer.parseInt(m.getValueAt(modelRow, 0).toString());
-        long numeroIdentificacion= Long.parseLong(m.getValueAt(modelRow, 1).toString());
-        String tipoIdentificacion= String.valueOf(m.getValueAt(modelRow, 2));
-        String primerNombre      = String.valueOf(m.getValueAt(modelRow, 3));
-        String segundoNombre     = m.getValueAt(modelRow, 4) != null ? String.valueOf(m.getValueAt(modelRow, 4)) : "";
-        String primerApellido    = String.valueOf(m.getValueAt(modelRow, 5));
-        String segundoApellido   = m.getValueAt(modelRow, 6) != null ? String.valueOf(m.getValueAt(modelRow, 6)) : "";
-        String direccion         = String.valueOf(m.getValueAt(modelRow, 7));
-        long celular             = Long.parseLong(m.getValueAt(modelRow, 8).toString());
-        String correo            = String.valueOf(m.getValueAt(modelRow, 9));
-        String estado            = String.valueOf(m.getValueAt(modelRow, 10));
 
-        ActualizarTecnico actualizar = new ActualizarTecnico(
-            numeroRegistro, numeroIdentificacion, tipoIdentificacion,
-            primerNombre, segundoNombre, primerApellido, segundoApellido,
-            direccion, celular, correo, estado, this::cargarTecnicos
+        ActualizarLote actualizar = new ActualizarLote(
+            numeroLote, areaTotal, areaSiembra, estado, fSiembra, fEliminacion, idCultivo, idLugar,
+            this::cargarLotes
         );
         actualizar.setVisible(true);
     }//GEN-LAST:event_botoneditarActionPerformed
 
     private void botoneliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botoneliminarActionPerformed
         int viewRow = jTable1.getSelectedRow();
-        if (viewRow == -1) { JOptionPane.showMessageDialog(this, "Seleccione un técnico para eliminar."); return; }
+        if (viewRow == -1) { JOptionPane.showMessageDialog(this, "Seleccione un lote para eliminar."); return; }
 
         int row = jTable1.convertRowIndexToModel(viewRow);
-        int numeroRegistro = Integer.parseInt(jTable1.getModel().getValueAt(row, 0).toString());
+        int numeroLote = Integer.parseInt(jTable1.getModel().getValueAt(row, 0).toString());
 
-        int res = JOptionPane.showConfirmDialog(this, "¿Está seguro de inactivar este técnico?", "Confirmar", JOptionPane.YES_NO_OPTION);
+        int res = JOptionPane.showConfirmDialog(this, "¿Eliminar este lote?", "Confirmar", JOptionPane.YES_NO_OPTION);
         if (res == JOptionPane.YES_OPTION) {
-            if (tecnicoOficialController.eliminarTecnico(numeroRegistro)) {
-                JOptionPane.showMessageDialog(this, "✅ Técnico inactivado.");
-                cargarTecnicos();
+            if (loteController.eliminarLote(numeroLote)) {
+                JOptionPane.showMessageDialog(this, "✅ Lote eliminado.");
+                cargarLotes();
             } else {
-                JOptionPane.showMessageDialog(this, "❌ No se pudo inactivar el técnico.");
+                JOptionPane.showMessageDialog(this, "❌ No se pudo eliminar. Verifique dependencias (FK).");
             }
         }
     }//GEN-LAST:event_botoneliminarActionPerformed
@@ -214,20 +196,23 @@ class TablaTecnico extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Tabla.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(TablaLote.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Tabla.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(TablaLote.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Tabla.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(TablaLote.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Tabla.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(TablaLote.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new TablaTecnico().setVisible(true);
+                new TablaLote().setVisible(true);
             }
         });
     }

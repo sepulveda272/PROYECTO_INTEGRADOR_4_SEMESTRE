@@ -39,9 +39,10 @@ public ActualizarProductor(
     this.onProductorActualizado = onProductorActualizado;
 
     // Llenar los campos con los datos recibidos
-    this.id__productorA.setText(String.valueOf(idProductor));
+    id__PRODUCOTRA.setText(String.valueOf(idProductor));
+    id__PRODUCOTRA.setEditable(false);
     this.cedula.setText(String.valueOf(numeroIdentificacion));
-    this.tipoCedula.setText(tipoIdentificacion);
+    tipocedula.addItem("CC"); tipocedula.addItem("CC"); tipocedula.addItem("CE"); tipocedula.addItem("PA");tipocedula.addItem("NIT"); tipocedula.setSelectedItem(tipoIdentificacion);
     this.PriNombre.setText(primerNombre);
     this.segNombre.setText(segundoNombre);
     this.priApellido.setText(primerApellido);
@@ -49,7 +50,7 @@ public ActualizarProductor(
     this.direccion.setText(direccion);
     this.telefono.setText(String.valueOf(celular));
     this.correoo.setText(correo);
-    this.estadooo.setText(estado);
+    estadooo.addItem("ACTIVO"); estadooo.addItem("INACTIVO"); estadooo.setSelectedItem(estado);
 }
 
     /**
@@ -63,18 +64,29 @@ public ActualizarProductor(
 
         jPanel1 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
-        id__productorA = new javax.swing.JTextField();
-        cedula = new javax.swing.JTextField();
-        tipoCedula = new javax.swing.JTextField();
-        PriNombre = new javax.swing.JTextField();
-        segNombre = new javax.swing.JTextField();
-        priApellido = new javax.swing.JTextField();
-        segApellido = new javax.swing.JTextField();
-        direccion = new javax.swing.JTextField();
-        telefono = new javax.swing.JTextField();
-        estadooo = new javax.swing.JTextField();
-        correoo = new javax.swing.JTextField();
         jLabel12 = new javax.swing.JLabel();
+        cedula = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        id__PRODUCOTRA = new javax.swing.JTextField();
+        tipocedula = new javax.swing.JComboBox<>();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        PriNombre = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+        priApellido = new javax.swing.JTextField();
+        segNombre = new javax.swing.JTextField();
+        jLabel7 = new javax.swing.JLabel();
+        segApellido = new javax.swing.JTextField();
+        jLabel8 = new javax.swing.JLabel();
+        direccion = new javax.swing.JTextField();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        correoo = new javax.swing.JTextField();
+        telefono = new javax.swing.JTextField();
+        jLabel10 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        estadooo = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setBackground(new java.awt.Color(255, 238, 208));
@@ -88,83 +100,106 @@ public ActualizarProductor(
                 jButton1ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 460, 170, 60));
+        jPanel1.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 560, 180, 60));
 
-        id__productorA.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                id__productorAActionPerformed(evt);
-            }
-        });
-        jPanel1.add(id__productorA, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 70, 180, 40));
+        jLabel12.setFont(new java.awt.Font("Cambria", 3, 48)); // NOI18N
+        jLabel12.setForeground(new java.awt.Color(51, 153, 0));
+        jLabel12.setText("Actualizar productor");
+        jPanel1.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 0, 460, 60));
 
         cedula.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cedulaActionPerformed(evt);
             }
         });
-        jPanel1.add(cedula, new org.netbeans.lib.awtextra.AbsoluteConstraints(330, 70, 180, 40));
+        jPanel1.add(cedula, new org.netbeans.lib.awtextra.AbsoluteConstraints(320, 100, 180, 40));
 
-        tipoCedula.addActionListener(new java.awt.event.ActionListener() {
+        jLabel3.setText("Cedula");
+        jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(320, 80, -1, -1));
+
+        jLabel2.setText("Id del productor");
+        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 80, -1, -1));
+
+        id__PRODUCOTRA.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tipoCedulaActionPerformed(evt);
+                id__PRODUCOTRAActionPerformed(evt);
             }
         });
-        jPanel1.add(tipoCedula, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 130, 180, 40));
-        jPanel1.add(PriNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(330, 130, 180, 40));
+        jPanel1.add(id__PRODUCOTRA, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 100, 180, 40));
 
-        segNombre.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                segNombreActionPerformed(evt);
-            }
-        });
-        jPanel1.add(segNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 190, 180, 40));
+        jPanel1.add(tipocedula, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 180, 180, 40));
+
+        jLabel4.setText("Tipo de identificacion");
+        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 160, -1, -1));
+
+        jLabel5.setText("Primer nombre");
+        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(320, 160, -1, -1));
+        jPanel1.add(PriNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(320, 180, 180, 40));
+
+        jLabel1.setText("Primer apellido");
+        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(320, 240, -1, -1));
 
         priApellido.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 priApellidoActionPerformed(evt);
             }
         });
-        jPanel1.add(priApellido, new org.netbeans.lib.awtextra.AbsoluteConstraints(330, 190, 180, 40));
+        jPanel1.add(priApellido, new org.netbeans.lib.awtextra.AbsoluteConstraints(320, 260, 180, 40));
+
+        segNombre.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                segNombreActionPerformed(evt);
+            }
+        });
+        jPanel1.add(segNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 260, 180, 40));
+
+        jLabel7.setText("Segundo nombre");
+        jPanel1.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 240, -1, -1));
 
         segApellido.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 segApellidoActionPerformed(evt);
             }
         });
-        jPanel1.add(segApellido, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 260, 180, 40));
+        jPanel1.add(segApellido, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 340, 180, 40));
+
+        jLabel8.setText("Segundo apellido");
+        jPanel1.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 320, -1, -1));
 
         direccion.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 direccionActionPerformed(evt);
             }
         });
-        jPanel1.add(direccion, new org.netbeans.lib.awtextra.AbsoluteConstraints(330, 260, 180, 40));
+        jPanel1.add(direccion, new org.netbeans.lib.awtextra.AbsoluteConstraints(320, 340, 180, 40));
 
-        telefono.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                telefonoActionPerformed(evt);
-            }
-        });
-        jPanel1.add(telefono, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 330, 180, 40));
+        jLabel9.setText("Direccion");
+        jPanel1.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(320, 320, -1, -1));
 
-        estadooo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                estadoooActionPerformed(evt);
-            }
-        });
-        jPanel1.add(estadooo, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 390, 180, 40));
+        jLabel11.setText("Correo");
+        jPanel1.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(320, 400, -1, -1));
 
         correoo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 correooActionPerformed(evt);
             }
         });
-        jPanel1.add(correoo, new org.netbeans.lib.awtextra.AbsoluteConstraints(330, 330, 180, 40));
+        jPanel1.add(correoo, new org.netbeans.lib.awtextra.AbsoluteConstraints(320, 420, 180, 40));
 
-        jLabel12.setFont(new java.awt.Font("Cambria", 3, 48)); // NOI18N
-        jLabel12.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel12.setText("Actualizar productor");
-        jPanel1.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 0, 460, 60));
+        telefono.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                telefonoActionPerformed(evt);
+            }
+        });
+        jPanel1.add(telefono, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 420, 180, 40));
+
+        jLabel10.setText("Celular");
+        jPanel1.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 400, -1, -1));
+
+        jLabel6.setText("Estado");
+        jPanel1.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 480, -1, -1));
+
+        jPanel1.add(estadooo, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 500, 180, 40));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -176,7 +211,7 @@ public ActualizarProductor(
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 533, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 643, Short.MAX_VALUE)
         );
 
         pack();
@@ -185,9 +220,9 @@ public ActualizarProductor(
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
     try {
         // Obtener los valores del formulario
-        int idProductor = Integer.parseInt(id__productorA.getText().trim());
+        int idProductor = Integer.parseInt(id__PRODUCOTRA.getText().trim());
         long numeroIdentificacion = Long.parseLong(cedula.getText().trim());
-        String tipoIdentificacion = tipoCedula.getText().trim();
+        String tipoIdentificacion = (String) tipocedula.getSelectedItem();
         String primerNombre = PriNombre.getText().trim();
         String segundoNombre = segNombre.getText().trim();
         String primerApellido = priApellido.getText().trim();
@@ -195,7 +230,7 @@ public ActualizarProductor(
         String direccionTxt = direccion.getText().trim();
         long celular = Long.parseLong(telefono.getText().trim());
         String correo = correoo.getText().trim();
-        String estado = estadooo.getText().trim();
+        String estado = (String) estadooo.getSelectedItem();
 
         // Validar campos obligatorios
         if (tipoIdentificacion.isEmpty() || primerNombre.isEmpty() || primerApellido.isEmpty() ||
@@ -242,45 +277,37 @@ public ActualizarProductor(
     }
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    private void id__productorAActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_id__productorAActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_id__productorAActionPerformed
-
-    private void tipoCedulaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tipoCedulaActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_tipoCedulaActionPerformed
-
-    private void segNombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_segNombreActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_segNombreActionPerformed
-
-    private void direccionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_direccionActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_direccionActionPerformed
-
     private void cedulaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cedulaActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_cedulaActionPerformed
+
+    private void id__PRODUCOTRAActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_id__PRODUCOTRAActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_id__PRODUCOTRAActionPerformed
 
     private void priApellidoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_priApellidoActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_priApellidoActionPerformed
 
+    private void segNombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_segNombreActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_segNombreActionPerformed
+
     private void segApellidoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_segApellidoActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_segApellidoActionPerformed
 
-    private void telefonoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_telefonoActionPerformed
+    private void direccionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_direccionActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_telefonoActionPerformed
-
-    private void estadoooActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_estadoooActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_estadoooActionPerformed
+    }//GEN-LAST:event_direccionActionPerformed
 
     private void correooActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_correooActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_correooActionPerformed
+
+    private void telefonoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_telefonoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_telefonoActionPerformed
 
     /**
      * @param args the command line arguments
@@ -300,15 +327,26 @@ public ActualizarProductor(
     private javax.swing.JTextField cedula;
     private javax.swing.JTextField correoo;
     private javax.swing.JTextField direccion;
-    private javax.swing.JTextField estadooo;
-    private javax.swing.JTextField id__productorA;
+    private javax.swing.JComboBox<String> estadooo;
+    private javax.swing.JTextField id__PRODUCOTRA;
     private javax.swing.JButton jButton1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField priApellido;
     private javax.swing.JTextField segApellido;
     private javax.swing.JTextField segNombre;
     private javax.swing.JTextField telefono;
-    private javax.swing.JTextField tipoCedula;
+    private javax.swing.JComboBox<String> tipocedula;
     // End of variables declaration//GEN-END:variables
 }

@@ -33,7 +33,7 @@ public class PredioController {
 
         // ✅ Verificar si el lugar de producción existe y está activo
         if (!lugarProduccionDAO.existeLugarPro(idLugar)) {
-            System.out.println("❌ El lugar de producción con ID " + idLugar + " no existe o no está activo.");
+            System.out.println("❌ El lugar de producción con ID " + idLugar + " no existe.");
             return false;
         }
 

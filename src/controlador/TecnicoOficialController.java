@@ -7,108 +7,157 @@ package controlador;
 import modelo.TecnicoOficial;
 import modelo.TecnicoOficialDAO;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  *
  * @author ADMIN
  */
 public class TecnicoOficialController {
-    private TecnicoOficialDAO tecnicoOficialDAO;
-    
-    public TecnicoOficialController(){
+    private final TecnicoOficialDAO tecnicoOficialDAO;
+
+    public TecnicoOficialController() {
         this.tecnicoOficialDAO = new TecnicoOficialDAO();
     }
-    
-    public boolean agregarTecnico(int numeroRegistro, long numeroIdentificacion, String tipoIdentificacion,String primerNombre, String segundoNombre, String primerApellido,String segundoApellido, String direccion, long celular,String correo, String password) {
-    
-        
-        // Evitar duplicados por ID
-        if (tecnicoOficialDAO.existeTecnico(numeroRegistro)) {
-            System.out.println("❌ Ya existe un tecnico con ID " + numeroRegistro + ".");
-            return false;
-        }
-        
-        // Crear objeto Productor con los datos recibidos
-        TecnicoOficial tecnico = new TecnicoOficial(
-            numeroRegistro,
-            numeroIdentificacion,
-            tipoIdentificacion,
-            primerNombre,
-            segundoNombre,
-            primerApellido,
-            segundoApellido,
-            direccion,
-            celular,
-            correo,
-            password,
-            "ACTIVO" // Estado por defecto
-        );
 
-        // Insertar usando el DAO
-        boolean resultado = tecnicoOficialDAO.insertarTecnico(tecnico);
+    /* ====== Validaciones mínimas (mismas que ya usabas) ====== */
+    private static final Pattern EMAIL_RX = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
+    private String validarAlta(long numeroIdentificacion, String tipoIdentificacion,
+                               String primerNombre, String primerApellido, String direccion,
+                               long celular, String correo, String password) {
+        if (numeroIdentificacion <= 0) return "numero_identificacion debe ser > 0.";
+        if (tipoIdentificacion == null || tipoIdentificacion.trim().isEmpty()) return "tipo_identificacion es obligatorio.";
+        if (primerNombre == null || primerNombre.trim().isEmpty()) return "primer_nombre es obligatorio.";
+        if (primerApellido == null || primerApellido.trim().isEmpty()) return "primer_apellido es obligatorio.";
+        if (direccion == null || direccion.trim().isEmpty()) return "direccion es obligatoria.";
+        if (celular <= 0) return "celular debe ser > 0.";
+        if (correo == null || correo.trim().isEmpty()) return "correo es obligatorio.";
+        if (!EMAIL_RX.matcher(correo.trim()).matches()) return "correo con formato inválido.";
+        if (password == null || password.isEmpty()) return "password es obligatorio.";
+        return null;
+    }
 
-        // Validar resultado
-        if (resultado) {
-            System.out.println("✅ Tecnico agregado con éxito.");
-        } else {
-            System.out.println("❌ Error al agregar el Tecnico.");
-        }
-        return resultado;
+    /* ===================== CREATE ===================== */
+
+    /** Alta con ID automático (usa seq_tecnico). Retorna el ID generado (>0) o -1 si falla. */
+    public int agregarTecnicoAuto(long numeroIdentificacion, String tipoIdentificacion,
+                                  String primerNombre, String segundoNombre, String primerApellido,
+                                  String segundoApellido, String direccion, long celular,
+                                  String correo, String password) {
+
+        String err = validarAlta(numeroIdentificacion, tipoIdentificacion, primerNombre, primerApellido, direccion, celular, correo, password);
+        if (err != null) { System.out.println("❌ " + err); return -1; }
+
+        TecnicoOficial t = new TecnicoOficial();
+        t.setNumero_identificacion(numeroIdentificacion);
+        t.setTipo_identificacion(tipoIdentificacion);
+        t.setPrimer_nombre(primerNombre);
+        t.setSegundo_nombre(segundoNombre);
+        t.setPrimer_apellido(primerApellido);
+        t.setSegundo_apellido(segundoApellido);
+        t.setDireccion(direccion);
+        t.setCelular(celular);
+        t.setCorreo(correo);
+        t.setPassword(password);   // el DAO lo hashea
+        t.setEstado("ACTIVO");     // default; la tabla también lo pone por defecto
+
+        int nuevoId = tecnicoOficialDAO.insertarTecnicoAuto(t);
+        if (nuevoId > 0) System.out.println("✅ Técnico agregado con ID " + nuevoId + " (secuencia).");
+        else              System.out.println("❌ Error al agregar el técnico (ID automático).");
+        return nuevoId;
     }
-    
-    // En PlagaController
-    public boolean existeIdTecnico(int numeroRegistro) {
-        return tecnicoOficialDAO.existeTecnico(numeroRegistro);
-    }
-    
-    
-    public List<TecnicoOficial> listarTecnico() {
+
+    /* ===================== READ ===================== */
+
+    public List<TecnicoOficial> listarTecnicosActivos() {
         List<TecnicoOficial> tecnicos = tecnicoOficialDAO.listarTecnicosActivos();
-
-        if (tecnicos.isEmpty()) {
-            System.out.println("⚠️ No hay tecnicos activos registrados.");
-        } else {
-            System.out.println("✅ Se encontraron " + tecnicos.size() + " tecnicos activos.");
-        }
-
+        if (tecnicos.isEmpty()) System.out.println("⚠️ No hay técnicos activos registrados.");
+        else                    System.out.println("✅ Se encontraron " + tecnicos.size() + " técnicos activos.");
         return tecnicos;
     }
 
-    public boolean actualizarTecnico(int numeroRegistro, long numeroIdentificacion, String tipoIdentificacion,String primerNombre, String segundoNombre, String primerApellido,String segundoApellido, String direccion, long celular,String correo, String estado) {
-         // Crear objeto con los datos actualizados
-        TecnicoOficial tecnicoOficial = new TecnicoOficial();
-        tecnicoOficial.setNumero_registro(numeroRegistro);
-        tecnicoOficial.setNumero_identificacion(numeroIdentificacion);
-        tecnicoOficial.setTipo_identificacion(tipoIdentificacion);
-        tecnicoOficial.setPrimer_nombre(primerNombre);
-        tecnicoOficial.setSegundo_nombre(segundoNombre);
-        tecnicoOficial.setPrimer_apellido(primerApellido);
-        tecnicoOficial.setSegundo_apellido(segundoApellido);
-        tecnicoOficial.setDireccion(direccion);
-        tecnicoOficial.setCelular(celular);
-        tecnicoOficial.setCorreo(correo);
-        tecnicoOficial.setEstado(estado);
-
-        // Llamar al DAO para actualizar
-        boolean resultado = tecnicoOficialDAO.actualizarTecnico(tecnicoOficial);
-
-        // Mensaje de control
-        if (resultado) {
-            System.out.println("✅ Tecnico actualizado correctamente (ID: " + numeroRegistro + ")");
-        } else {
-            System.out.println("❌ Error al actualizar el tecnico (ID: " + numeroRegistro + ")");
-        }
-
-        return resultado;
+    public List<TecnicoOficial> listarTecnicos() {
+        List<TecnicoOficial> tecnicos = tecnicoOficialDAO.listarTecnicos();
+        if (tecnicos.isEmpty()) System.out.println("ℹ️ No hay técnicos registrados.");
+        else                    System.out.println("✅ Total técnicos: " + tecnicos.size() + ".");
+        return tecnicos;
     }
-    
-    public void eliminarTecnico(int numeroRegistro) {
-        boolean resultado = tecnicoOficialDAO.eliminarTecnico(numeroRegistro);
 
-        if (resultado) {
-            System.out.println("✅ Tecnico eliminado (estado cambiado a INACTIVO).");
-        } else {
-            System.out.println("❌ Error al eliminar el tecnico con ID: " + numeroRegistro);
+    /* ===================== UPDATE ===================== */
+
+    public boolean actualizarTecnico(int numeroRegistro, long numeroIdentificacion, String tipoIdentificacion,
+                                     String primerNombre, String segundoNombre, String primerApellido,
+                                     String segundoApellido, String direccion, long celular,
+                                     String correo, String estado) {
+
+        if (!tecnicoOficialDAO.existeTecnico(numeroRegistro)) {
+            System.out.println("⚠️ No existe técnico con ID " + numeroRegistro + ". Nada que actualizar.");
+            return false;
         }
+
+        TecnicoOficial t = new TecnicoOficial();
+        t.setNumero_registro(numeroRegistro);
+        t.setNumero_identificacion(numeroIdentificacion);
+        t.setTipo_identificacion(tipoIdentificacion);
+        t.setPrimer_nombre(primerNombre);
+        t.setSegundo_nombre(segundoNombre);
+        t.setPrimer_apellido(primerApellido);
+        t.setSegundo_apellido(segundoApellido);
+        t.setDireccion(direccion);
+        t.setCelular(celular);
+        t.setCorreo(correo);
+        t.setEstado(estado);
+
+        boolean ok = tecnicoOficialDAO.actualizarTecnico(t);
+        if (ok) System.out.println("✅ Técnico actualizado (ID: " + numeroRegistro + ").");
+        else    System.out.println("❌ Error al actualizar el técnico (ID: " + numeroRegistro + ").");
+        return ok;
+    }
+
+    /** Cambio de contraseña: el DAO aplica BCrypt automáticamente. */
+    public boolean actualizarPassword(int numeroRegistro, String nuevoPassword) {
+        if (!tecnicoOficialDAO.existeTecnico(numeroRegistro)) {
+            System.out.println("⚠️ No existe técnico con ID " + numeroRegistro + ".");
+            return false;
+        }
+        if (nuevoPassword == null || nuevoPassword.isEmpty()) {
+            System.out.println("❌ La contraseña no puede ser vacía.");
+            return false;
+        }
+        boolean ok = tecnicoOficialDAO.actualizarPassword(numeroRegistro, nuevoPassword);
+        if (ok) System.out.println("✅ Contraseña actualizada (ID: " + numeroRegistro + ").");
+        else    System.out.println("❌ Error al actualizar la contraseña (ID: " + numeroRegistro + ").");
+        return ok;
+    }
+
+    /* ===================== DELETE / REACTIVAR ===================== */
+
+    public boolean eliminarTecnico(int numeroRegistro) {
+        if (!tecnicoOficialDAO.existeTecnico(numeroRegistro)) {
+            System.out.println("⚠️ No existe técnico con ID " + numeroRegistro + ". Nada que eliminar.");
+            return false;
+        }
+        boolean ok = tecnicoOficialDAO.eliminarTecnico(numeroRegistro);
+        if (ok) System.out.println("✅ Técnico inactivado (ID: " + numeroRegistro + ").");
+        else    System.out.println("❌ Error al inactivar el técnico (ID: " + numeroRegistro + ").");
+        return ok;
+    }
+
+    /* ===================== EXISTS / LOGIN ===================== */
+
+    public boolean existeIdTecnico(int numeroRegistro) {
+        return tecnicoOficialDAO.existeTecnico(numeroRegistro);
+    }
+
+    public boolean existeTecnicoActivo(int numeroRegistro) {
+        return tecnicoOficialDAO.existeTecnicoActivo(numeroRegistro);
+    }
+
+    /** Retorna el número de registro si login OK + ACTIVO; si no, null. */
+    public Integer iniciarSesion(String correo, String password) {
+        Integer id = tecnicoOficialDAO.validarTecnico(correo, password);
+        if (id != null) System.out.println("✅ Inicio de sesión exitoso (ID: " + id + ").");
+        else            System.out.println("❌ Credenciales inválidas o técnico inactivo.");
+        return id;
     }
 }

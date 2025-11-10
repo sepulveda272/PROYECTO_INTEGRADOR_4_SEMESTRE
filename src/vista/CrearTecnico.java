@@ -22,9 +22,7 @@ public class CrearTecnico extends javax.swing.JFrame {
     public CrearTecnico(/*String idusuario,*/Runnable onTecnicoGuardado ) {
         initComponents();
         setLocationRelativeTo(null);
-        //this.idusuario=idusuario;
         this.onTecnicoGuardado = onTecnicoGuardado;
-        //System.out.println(idusuario);
     }
 
     /**
@@ -38,18 +36,14 @@ public class CrearTecnico extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         PriNombre = new javax.swing.JTextField();
-        numReistro = new javax.swing.JTextField();
-        tipoCedula = new javax.swing.JTextField();
         segNombre = new javax.swing.JTextField();
         direccion = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         cedula = new javax.swing.JTextField();
         priApellido = new javax.swing.JTextField();
-        contraseña = new javax.swing.JTextField();
         segApellido = new javax.swing.JTextField();
         telefono = new javax.swing.JTextField();
         correoo = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
@@ -61,41 +55,29 @@ public class CrearTecnico extends javax.swing.JFrame {
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
+        clave = new javax.swing.JPasswordField();
+        tipocedula = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setBackground(new java.awt.Color(255, 238, 208));
 
         jPanel1.setBackground(new java.awt.Color(237, 218, 197));
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-        jPanel1.add(PriNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 200, 180, 40));
-
-        numReistro.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                numReistroActionPerformed(evt);
-            }
-        });
-        jPanel1.add(numReistro, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 120, 180, 40));
-
-        tipoCedula.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tipoCedulaActionPerformed(evt);
-            }
-        });
-        jPanel1.add(tipoCedula, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 200, 180, 40));
+        jPanel1.add(PriNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 200, 180, 40));
 
         segNombre.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 segNombreActionPerformed(evt);
             }
         });
-        jPanel1.add(segNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 280, 180, 40));
+        jPanel1.add(segNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 200, 180, 40));
 
         direccion.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 direccionActionPerformed(evt);
             }
         });
-        jPanel1.add(direccion, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 360, 180, 40));
+        jPanel1.add(direccion, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 360, 180, 40));
 
         jButton1.setText("Crear");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -103,35 +85,28 @@ public class CrearTecnico extends javax.swing.JFrame {
                 jButton1ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 580, 170, 60));
+        jPanel1.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 510, 170, 60));
 
         cedula.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cedulaActionPerformed(evt);
             }
         });
-        jPanel1.add(cedula, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 120, 180, 40));
+        jPanel1.add(cedula, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 120, 180, 40));
 
         priApellido.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 priApellidoActionPerformed(evt);
             }
         });
-        jPanel1.add(priApellido, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 280, 180, 40));
-
-        contraseña.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                contraseñaActionPerformed(evt);
-            }
-        });
-        jPanel1.add(contraseña, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 520, 180, 40));
+        jPanel1.add(priApellido, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 280, 180, 40));
 
         segApellido.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 segApellidoActionPerformed(evt);
             }
         });
-        jPanel1.add(segApellido, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 360, 180, 40));
+        jPanel1.add(segApellido, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 280, 180, 40));
 
         telefono.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -145,45 +120,46 @@ public class CrearTecnico extends javax.swing.JFrame {
                 correooActionPerformed(evt);
             }
         });
-        jPanel1.add(correoo, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 440, 180, 40));
-
-        jLabel1.setText("Numero Registro");
-        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 100, -1, -1));
+        jPanel1.add(correoo, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 360, 180, 40));
 
         jLabel2.setText("Numero de identificacion");
-        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 100, -1, -1));
+        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 100, -1, -1));
 
         jLabel3.setText("Tipo de identificacion");
-        jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 180, -1, -1));
+        jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 100, -1, -1));
 
         jLabel4.setText("Primer nombre");
-        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 180, -1, -1));
+        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 180, -1, -1));
 
         jLabel5.setText("Segundo nombre");
-        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 260, -1, -1));
+        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 180, -1, -1));
 
         jLabel6.setText("Primer apellido");
-        jPanel1.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 260, -1, -1));
+        jPanel1.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 260, -1, -1));
 
         jLabel7.setText("Segundo Apellido");
-        jPanel1.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 340, -1, -1));
+        jPanel1.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 260, -1, -1));
 
         jLabel8.setText("Direccion");
-        jPanel1.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 340, -1, -1));
+        jPanel1.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 340, -1, -1));
 
         jLabel9.setText("Celular");
         jPanel1.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 420, -1, -1));
 
         jLabel10.setText("Correo");
-        jPanel1.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 420, -1, -1));
+        jPanel1.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 340, -1, -1));
 
         jLabel11.setText("Contraseña");
-        jPanel1.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 500, -1, -1));
+        jPanel1.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 420, -1, -1));
 
         jLabel12.setFont(new java.awt.Font("Cambria", 3, 48)); // NOI18N
         jLabel12.setForeground(new java.awt.Color(51, 153, 0));
         jLabel12.setText("Añadir tecnico");
         jPanel1.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 20, 330, 60));
+        jPanel1.add(clave, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 440, 180, 40));
+
+        tipocedula.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Seleccione una opcion...", "CC", "CE", "PA", "NIT" }));
+        jPanel1.add(tipocedula, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 120, 180, 40));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -195,88 +171,58 @@ public class CrearTecnico extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 652, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 590, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void tipoCedulaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tipoCedulaActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_tipoCedulaActionPerformed
-
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         try {
-            int numeroRegistro = Integer.parseInt(numReistro.getText().trim());
-            long numeroIdentificacion = Long.parseLong(cedula.getText().trim());
-            long celular = Long.parseLong(telefono.getText().trim());
-            String tipoIdentificacion = tipoCedula.getText().trim();
-            String primerNombre = PriNombre.getText().trim();
-            String segundoNombre = segNombre.getText().trim();
-            String primerApellido = priApellido.getText().trim();
-            String segundoApellido = segApellido.getText().trim();
-            String direccionTxt = direccion.getText().trim();
-            String correo = correoo.getText().trim();
-            String password = contraseña.getText().trim();
-            
-            TecnicoOficialController tecnicoOficialController = new TecnicoOficialController();
-            
-            // === Validaciones de duplicados usando DAO (vía controller) ===
-            if (tecnicoOficialController.existeIdTecnico(numeroRegistro)) {
-                JOptionPane.showMessageDialog(this, "❌ Ya existe un tecnico con ID " + numeroRegistro + ".");
-                numReistro.requestFocus();
-                return;
-            }
-            
-            if (tipoIdentificacion.isEmpty() || primerNombre.isEmpty() || primerApellido.isEmpty() ||
-                direccionTxt.isEmpty() || correo.isEmpty() || password.isEmpty()) {
+        long numeroIdentificacion = Long.parseLong(cedula.getText().trim());
+        long celular = Long.parseLong(telefono.getText().trim());
+        String tipoIdentificacion = (String) tipocedula.getSelectedItem();
+        String primerNombre = PriNombre.getText().trim();
+        String segundoNombre = segNombre.getText().trim();
+        String primerApellido = priApellido.getText().trim();
+        String segundoApellido = segApellido.getText().trim();
+        String direccionTxt = direccion.getText().trim();
+        String correo = correoo.getText().trim();
+        String password = new String(clave.getPassword()).trim(); // <-- JPasswordField
 
-                JOptionPane.showMessageDialog(this, "Por favor completa todos los campos obligatorios.");
-                return;
-            }
-            
-            
-            tecnicoOficialController.agregarTecnico(
-                    numeroRegistro,
-                    numeroIdentificacion,
-                    tipoIdentificacion,
-                    primerNombre,
-                    segundoNombre,
-                    primerApellido,
-                    segundoApellido,
-                    direccionTxt,
-                    celular,
-                    correo,
-                    password
-            );
-            
-            JOptionPane.showMessageDialog(this, "✅ Tecnico creado exitosamente.");
-            System.out.println("Tecnico creado exitosamente.");
+        TecnicoOficialController c = new TecnicoOficialController();
 
-            // Refrescar la tabla si hay callback
-            if (onTecnicoGuardado != null) {
-                onTecnicoGuardado.run();
-            }
-
-            // Cerrar la ventana
-            dispose();
-            
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Error: Los campos numéricos deben contener solo números.");
-            System.out.println("❌ Error: número inválido - " + e.getMessage());
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Ocurrió un error al guardar el tecnico.");
-            ex.printStackTrace();
+        if (tipoIdentificacion.isEmpty() || primerNombre.isEmpty() || primerApellido.isEmpty()
+                || direccionTxt.isEmpty() || correo.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor completa todos los campos obligatorios.");
+            return;
         }
+
+        int nuevoId = c.agregarTecnicoAuto(
+                numeroIdentificacion, tipoIdentificacion,
+                primerNombre, segundoNombre, primerApellido, segundoApellido,
+                direccionTxt, celular, correo, password
+        );
+
+        if (nuevoId > 0) {
+            JOptionPane.showMessageDialog(this, "✅ Técnico creado con ID " + nuevoId + ".");
+            if (onTecnicoGuardado != null) onTecnicoGuardado.run(); // refresca tabla
+            dispose();
+        } else {
+            JOptionPane.showMessageDialog(this, "❌ Error al crear el técnico.");
+        }
+
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(this, "Cédula y celular deben ser numéricos.");
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(this, "Ocurrió un error al guardar el técnico.");
+        ex.printStackTrace();
+    }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void segNombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_segNombreActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_segNombreActionPerformed
-
-    private void numReistroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_numReistroActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_numReistroActionPerformed
 
     private void direccionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_direccionActionPerformed
         // TODO add your handling code here:
@@ -289,10 +235,6 @@ public class CrearTecnico extends javax.swing.JFrame {
     private void priApellidoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_priApellidoActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_priApellidoActionPerformed
-
-    private void contraseñaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_contraseñaActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_contraseñaActionPerformed
 
     private void segApellidoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_segApellidoActionPerformed
         // TODO add your handling code here:
@@ -347,11 +289,10 @@ public class CrearTecnico extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField PriNombre;
     private javax.swing.JTextField cedula;
-    private javax.swing.JTextField contraseña;
+    private javax.swing.JPasswordField clave;
     private javax.swing.JTextField correoo;
     private javax.swing.JTextField direccion;
     private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
@@ -364,11 +305,10 @@ public class CrearTecnico extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JTextField numReistro;
     private javax.swing.JTextField priApellido;
     private javax.swing.JTextField segApellido;
     private javax.swing.JTextField segNombre;
     private javax.swing.JTextField telefono;
-    private javax.swing.JTextField tipoCedula;
+    private javax.swing.JComboBox<String> tipocedula;
     // End of variables declaration//GEN-END:variables
 }
