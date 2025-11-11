@@ -19,92 +19,176 @@ public class FuncionarioICAController {
         this.funcionarioICADAO = new FuncionarioICADAO();
     }
     
-    public boolean agregarFuncionarioICA(int idFuncionario, long numeroIdentificacion, String tipoIdentificacion,String primerNombre, String segundoNombre, String primerApellido,String segundoApellido, long celular,String correo, String password) {
-        
-        // Evitar duplicados por ID
-        if (funcionarioICADAO.existeFuncionario(idFuncionario)) {
-            System.out.println("❌ Ya existe un funcionario con ID " + idFuncionario + ".");
-            return false;
+     /* ===================== AUTH / LOGIN ===================== */
+
+    /**
+     * Intenta iniciar sesión con correo y password.
+     * @return id_funcionario si es correcto, null si falla.
+     */
+    public Integer iniciarSesion(String correo, String passwordPlano) {
+        if (correo == null || correo.trim().isEmpty()
+                || passwordPlano == null || passwordPlano.isEmpty()) {
+            return null;
         }
-        
-        // Crear objeto Productor con los datos recibidos
-        FuncionarioICA funcionario = new FuncionarioICA(
-            idFuncionario,
-            numeroIdentificacion,
-            tipoIdentificacion,
-            primerNombre,
-            segundoNombre,
-            primerApellido,
-            segundoApellido,
-            celular,
-            correo,
-            password,
-            "ACTIVO" // Estado por defecto
-        );
-
-        // Insertar usando el DAO
-        boolean resultado = funcionarioICADAO.insertarFuncionario(funcionario);
-
-        // Validar resultado
-        if (resultado) {
-            System.out.println("✅ Funcionario agregado con éxito.");
-        } else {
-            System.out.println("❌ Error al agregar el Tecnico.");
-        }
-        return resultado;
-    }
-    
-    // En PlagaController
-    public boolean existeIdFuncionario(int idFuncionario) {
-        return funcionarioICADAO.existeFuncionario(idFuncionario);
-    }
-    
-    public List<FuncionarioICA> listarFuncionario() {
-        List<FuncionarioICA> funcionarios = funcionarioICADAO.listarFuncionarios();
-
-        if (funcionarios.isEmpty()) {
-            System.out.println("⚠️ No hay Funcionario activos registrados.");
-        } else {
-            System.out.println("✅ Se encontraron " + funcionarios.size() + " funcionarios activos.");
-        }
-
-        return funcionarios;
+        return funcionarioICADAO.validarFuncionario(correo.trim(), passwordPlano);
     }
 
-    public boolean actualizarFuncionario(int idFuncionario, long numeroIdentificacion, String tipoIdentificacion,String primerNombre, String segundoNombre, String primerApellido,String segundoApellido, long celular,String correo, String estado) {
-         // Crear objeto con los datos actualizados
-        FuncionarioICA funcionarioICA = new FuncionarioICA();
-        funcionarioICA.setId_funcionario(idFuncionario);
-        funcionarioICA.setNumero_identificacion(numeroIdentificacion);
-        funcionarioICA.setTipo_identificacion(tipoIdentificacion);
-        funcionarioICA.setPrimer_nombre(primerNombre);
-        funcionarioICA.setSegundo_nombre(segundoNombre);
-        funcionarioICA.setPrimer_apellido(primerApellido);
-        funcionarioICA.setSegundo_apellido(segundoApellido);
-        funcionarioICA.setCelular(celular);
-        funcionarioICA.setCorreo(correo);
-        funcionarioICA.setEstado(estado);
+    /* ===================== CREATE ===================== */
 
-        // Llamar al DAO para actualizar
-        boolean resultado = funcionarioICADAO.actualizarFuncionario(funcionarioICA);
+    /**
+     * Registra un funcionario nuevo usando la secuencia (ID automático).
+     * Devuelve mensaje para mostrar en la vista.
+     */
+    public String registrarFuncionario(
+            String numeroIdentStr,
+            String tipoIdentificacion,
+            String primerNombre,
+            String segundoNombre,
+            String primerApellido,
+            String segundoApellido,
+            String celularStr,
+            String correo,
+            String passwordPlano,
+            String estado // puedes enviar null para que quede ACTIVO por defecto
+    ) {
+        // Validaciones básicas
+        if (esBlank(numeroIdentStr) || esBlank(tipoIdentificacion) ||
+            esBlank(primerNombre)   || esBlank(primerApellido)   ||
+            esBlank(celularStr)     || esBlank(correo)           ||
+            esBlank(passwordPlano)) {
 
-        // Mensaje de control
-        if (resultado) {
-            System.out.println("✅ Funcionario actualizado correctamente (ID: " + idFuncionario + ")");
-        } else {
-            System.out.println("❌ Error al actualizar el funcionario (ID: " + idFuncionario + ")");
+            return "Debes diligenciar todos los campos obligatorios.";
         }
 
-        return resultado;
+        long numeroIdent;
+        long celular;
+        try {
+            numeroIdent = Long.parseLong(numeroIdentStr.trim());
+            celular     = Long.parseLong(celularStr.trim());
+        } catch (NumberFormatException e) {
+            return "Número de identificación y celular deben ser numéricos.";
+        }
+
+        FuncionarioICA f = new FuncionarioICA();
+        f.setNumero_identificacion(numeroIdent);
+        f.setTipo_identificacion(tipoIdentificacion.trim());
+        f.setPrimer_nombre(primerNombre.trim());
+        f.setSegundo_nombre(esBlank(segundoNombre) ? null : segundoNombre.trim());
+        f.setPrimer_apellido(primerApellido.trim());
+        f.setSegundo_apellido(esBlank(segundoApellido) ? null : segundoApellido.trim());
+        f.setCelular(celular);
+        f.setCorreo(correo.trim());
+        f.setPassword(passwordPlano);           // el DAO se encarga de hashearla
+        f.setEstado(estado);                    // el DAO pone ACTIVO si viene null
+
+        int nuevoId = funcionarioICADAO.insertarFuncionarioAuto(f);
+        if (nuevoId > 0) {
+            return "Funcionario registrado correctamente. ID: " + nuevoId;
+        } else {
+            return "No se pudo registrar el funcionario.";
+        }
     }
-    
-    public void eliminarFuncionario(int idFuncionario) {
-        boolean resultado = funcionarioICADAO.eliminarFuncionario(idFuncionario);
 
-        if (resultado) {
-            System.out.println("✅ Tecnico eliminado (estado cambiado a INACTIVO).");
-        } else {
-            System.out.println("❌ Error al eliminar el tecnico con ID: " + idFuncionario);
+    /* ===================== READ ===================== */
+
+    public List<FuncionarioICA> obtenerFuncionarios() {
+        return funcionarioICADAO.listarFuncionarios();
+    }
+
+    public List<FuncionarioICA> obtenerFuncionariosActivos() {
+        return funcionarioICADAO.listarFuncionariosActivos();
+    }
+
+    /* ===================== UPDATE ===================== */
+
+    /**
+     * Actualiza un funcionario existente.
+     */
+    public String actualizarFuncionario(
+            int idFuncionario,
+            String numeroIdentStr,
+            String tipoIdentificacion,
+            String primerNombre,
+            String segundoNombre,
+            String primerApellido,
+            String segundoApellido,
+            String celularStr,
+            String correo,
+            String estado
+    ) {
+        if (!funcionarioICADAO.existeFuncionario(idFuncionario)) {
+            return "No existe el funcionario con ID " + idFuncionario;
         }
+
+        if (esBlank(numeroIdentStr) || esBlank(tipoIdentificacion) ||
+            esBlank(primerNombre)   || esBlank(primerApellido)   ||
+            esBlank(celularStr)     || esBlank(correo)           ||
+            esBlank(estado)) {
+
+            return "Debes diligenciar todos los campos obligatorios.";
+        }
+
+        long numeroIdent;
+        long celular;
+        try {
+            numeroIdent = Long.parseLong(numeroIdentStr.trim());
+            celular     = Long.parseLong(celularStr.trim());
+        } catch (NumberFormatException e) {
+            return "Número de identificación y celular deben ser numéricos.";
+        }
+
+        FuncionarioICA f = new FuncionarioICA();
+        f.setId_funcionario(idFuncionario);
+        f.setNumero_identificacion(numeroIdent);
+        f.setTipo_identificacion(tipoIdentificacion.trim());
+        f.setPrimer_nombre(primerNombre.trim());
+        f.setSegundo_nombre(esBlank(segundoNombre) ? null : segundoNombre.trim());
+        f.setPrimer_apellido(primerApellido.trim());
+        f.setSegundo_apellido(esBlank(segundoApellido) ? null : segundoApellido.trim());
+        f.setCelular(celular);
+        f.setCorreo(correo.trim());
+        f.setEstado(estado.trim());
+
+        boolean ok = funcionarioICADAO.actualizarFuncionario(f);
+        if (ok) {
+            return "Funcionario actualizado correctamente.";
+        } else {
+            return "No se pudo actualizar el funcionario.";
+        }
+    }
+
+    /**
+     * Cambia el password de un funcionario.
+     */
+    public String cambiarPassword(int idFuncionario, String nuevoPasswordPlano) {
+        if (!funcionarioICADAO.existeFuncionario(idFuncionario)) {
+            return "No existe el funcionario con ID " + idFuncionario;
+        }
+        if (esBlank(nuevoPasswordPlano)) {
+            return "El password no puede estar vacío.";
+        }
+        boolean ok = funcionarioICADAO.actualizarPassword(idFuncionario, nuevoPasswordPlano);
+        return ok ? "Contraseña actualizada correctamente."
+                  : "No se pudo actualizar la contraseña.";
+    }
+
+    /* ===================== DELETE LÓGICO ===================== */
+
+    /**
+     * Intenta desactivar el funcionario validando que no tenga inspecciones.
+     */
+    public String desactivarFuncionario(int idFuncionario) {
+        boolean ok = funcionarioICADAO.desactivarFuncionarioSiNoReferenciado(idFuncionario);
+        if (ok) {
+            return "Funcionario desactivado correctamente.";
+        } else {
+            return "No se pudo desactivar el funcionario (revise mensajes en la consola).";
+        }
+    }
+
+    /* ===================== Helpers ===================== */
+
+    private boolean esBlank(String s) {
+        return s == null || s.trim().isEmpty();
     }
 }

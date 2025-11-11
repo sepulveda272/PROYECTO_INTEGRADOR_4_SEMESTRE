@@ -188,7 +188,7 @@ class Tabla extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, "✅ Productor inactivado.");
                 cargarProductores();
             } else {
-                JOptionPane.showMessageDialog(this, "❌ No se pudo inactivar el técnico. Verifique dependencias (LUGAR DE PRODUCCION).");
+                JOptionPane.showMessageDialog(this, "❌ No se pudo inactivar el productor. Verifique dependencias (LUGAR DE PRODUCCION).");
             }
         }
     }//GEN-LAST:event_botoneliminarActionPerformed
