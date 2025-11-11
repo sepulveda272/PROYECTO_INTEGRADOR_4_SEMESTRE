@@ -7,10 +7,7 @@ package modelo;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import org.mindrot.jbcrypt.BCrypt;
 import modelo.ConexionBD;
 /**
  *
@@ -22,27 +19,38 @@ public class FuncionarioICADAO {
     public FuncionarioICADAO() {
         this.conexion = ConexionBD.getInstancia().getConnection();
     }
-
-    public Integer validarFuncionario(String correo, String password) {
-        String sql = "SELECT ID_FUNCIONARIO FROM FUNCIONARIO_ICA WHERE CORREO = ? AND PASSWORD = ? AND ESTADO = 'ACTIVO'";
-
-        try (Connection conn = ConexionBD.getInstancia().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, correo);
-            ps.setString(2, password);
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt("ID_FUNCIONARIO"); // ✅ Retorna el ID si las credenciales son correctas
-            }
-
+    
+    /** Obtiene el siguiente idFuncionario desde la secuencia Oracle. */
+    public int siguienteIdFuncionario() {
+        String sql = "SELECT seq_funcionario.NEXTVAL FROM dual";
+        try (PreparedStatement ps = conexion.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
         } catch (SQLException e) {
-            System.err.println("Error al validar funcionario: " + e.getMessage());
+            System.err.println("Error obteniendo NEXTVAL de seq_funcionario: " + e.getMessage());
             e.printStackTrace();
         }
+        return -1;
+    }
 
-        return null; // ❌ Retorna null si no hay coincidencia o el estado no es ACTIVO
+    public Integer validarFuncionario(String correo, String passwordPlano) {
+        String sql = "SELECT ID_FUNCIONARIO, PASSWORD FROM FUNCIONARIO_ICA WHERE CORREO = ? AND ESTADO = 'ACTIVO'";
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setString(1, correo);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int id = rs.getInt("ID_FUNCIONARIO");
+                    String hash = rs.getString("PASSWORD");
+                    if (hash != null && BCrypt.checkpw(passwordPlano, hash)) {
+                        return id;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al validar tecnico: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
     }
 
     
@@ -88,6 +96,18 @@ public class FuncionarioICADAO {
             return false;
         }
     }
+    
+    public int insertarFuncionarioAuto(FuncionarioICA funcionario) {
+        int nuevoId = siguienteIdFuncionario();
+        if (nuevoId <= 0) {
+            System.err.println("❌ No se pudo obtener NEXTVAL de seq_funcionario.");
+            return -1;
+        }
+        funcionario.setId_funcionario(nuevoId);
+        boolean ok = insertarFuncionario(funcionario);
+        return ok ? nuevoId : -1;
+    }
+
 
 
 
