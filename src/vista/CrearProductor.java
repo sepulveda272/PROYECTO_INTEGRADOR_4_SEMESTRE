@@ -207,7 +207,9 @@ public class CrearProductor extends javax.swing.JFrame {
                 return;
             }
 
-            int nuevoId = c.agregarProductorAuto(numeroIdentificacion, tipoIdentificacion, primerNombre, segundoNombre, primerApellido, segundoApellido, direccionTxt, celular, correo, password
+            int nuevoId = c.agregarProductorAuto(numeroIdentificacion, tipoIdentificacion, 
+                    primerNombre, segundoNombre, primerApellido, segundoApellido, direccionTxt,
+                    celular, correo, password
             );
 
             if (nuevoId > 0) {

@@ -19,12 +19,10 @@ public class CrearFuncionarioICA extends javax.swing.JFrame {
     /**
      * Creates new form CrearCliente
      */
-    public CrearFuncionarioICA(/*String idusuario,*/Runnable onFuncionarioGuardado ) {
+    public CrearFuncionarioICA(Runnable onFuncionarioGuardado ) {
         initComponents();
         setLocationRelativeTo(null);
-        //this.idusuario=idusuario;
         this.onFuncionarioGuardado = onFuncionarioGuardado;
-        //System.out.println(idusuario);
     }
 
     /**
@@ -38,8 +36,6 @@ public class CrearFuncionarioICA extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         PriNombre = new javax.swing.JTextField();
-        idFuncionarioo = new javax.swing.JTextField();
-        tipoCedula = new javax.swing.JTextField();
         segNombre = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         cedula = new javax.swing.JTextField();
@@ -48,9 +44,7 @@ public class CrearFuncionarioICA extends javax.swing.JFrame {
         segApellido = new javax.swing.JTextField();
         telefono = new javax.swing.JTextField();
         correoo = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
@@ -59,34 +53,22 @@ public class CrearFuncionarioICA extends javax.swing.JFrame {
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
+        tipocedula = new javax.swing.JComboBox<>();
+        jLabel3 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setBackground(new java.awt.Color(255, 238, 208));
 
         jPanel1.setBackground(new java.awt.Color(237, 218, 197));
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-        jPanel1.add(PriNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 160, 180, 40));
-
-        idFuncionarioo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                idFuncionariooActionPerformed(evt);
-            }
-        });
-        jPanel1.add(idFuncionarioo, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 80, 180, 40));
-
-        tipoCedula.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tipoCedulaActionPerformed(evt);
-            }
-        });
-        jPanel1.add(tipoCedula, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 160, 180, 40));
+        jPanel1.add(PriNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 180, 180, 40));
 
         segNombre.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 segNombreActionPerformed(evt);
             }
         });
-        jPanel1.add(segNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 240, 180, 40));
+        jPanel1.add(segNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 180, 180, 40));
 
         jButton1.setText("Crear");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -94,84 +76,84 @@ public class CrearFuncionarioICA extends javax.swing.JFrame {
                 jButton1ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 470, 170, 60));
+        jPanel1.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 480, 170, 60));
 
         cedula.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cedulaActionPerformed(evt);
             }
         });
-        jPanel1.add(cedula, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 80, 180, 40));
+        jPanel1.add(cedula, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 100, 180, 40));
 
         priApellido.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 priApellidoActionPerformed(evt);
             }
         });
-        jPanel1.add(priApellido, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 240, 180, 40));
+        jPanel1.add(priApellido, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 260, 180, 40));
 
         contraseña.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 contraseñaActionPerformed(evt);
             }
         });
-        jPanel1.add(contraseña, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 400, 180, 40));
+        jPanel1.add(contraseña, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 420, 180, 40));
 
         segApellido.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 segApellidoActionPerformed(evt);
             }
         });
-        jPanel1.add(segApellido, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 320, 180, 40));
+        jPanel1.add(segApellido, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 260, 180, 40));
 
         telefono.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 telefonoActionPerformed(evt);
             }
         });
-        jPanel1.add(telefono, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 400, 180, 40));
+        jPanel1.add(telefono, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 340, 180, 40));
 
         correoo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 correooActionPerformed(evt);
             }
         });
-        jPanel1.add(correoo, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 320, 180, 40));
-
-        jLabel1.setText("id Funcionario");
-        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 60, -1, -1));
+        jPanel1.add(correoo, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 340, 180, 40));
 
         jLabel2.setText("Numero de identificacion");
-        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 60, -1, -1));
-
-        jLabel3.setText("Tipo");
-        jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 140, -1, -1));
+        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 80, -1, -1));
 
         jLabel4.setText("Primer nombre");
-        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 140, -1, -1));
+        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 160, -1, -1));
 
         jLabel5.setText("Segundo nombre");
-        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 220, -1, -1));
+        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 160, -1, -1));
 
         jLabel6.setText("Primer apellido");
-        jPanel1.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 220, -1, -1));
+        jPanel1.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 240, -1, -1));
 
         jLabel7.setText("Segundo Apellido");
-        jPanel1.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 300, -1, -1));
+        jPanel1.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 240, -1, -1));
 
         jLabel9.setText("Celular");
-        jPanel1.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 380, -1, -1));
+        jPanel1.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 320, -1, -1));
 
         jLabel10.setText("Correo");
-        jPanel1.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 300, -1, -1));
+        jPanel1.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 320, -1, -1));
 
         jLabel11.setText("Contraseña");
-        jPanel1.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 380, -1, -1));
+        jPanel1.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 400, -1, -1));
 
         jLabel12.setFont(new java.awt.Font("Cambria", 3, 48)); // NOI18N
         jLabel12.setForeground(new java.awt.Color(51, 153, 0));
         jLabel12.setText("Añadir funcionario ICA");
         jPanel1.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 0, 500, 60));
+
+        tipocedula.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Seleccione una opcion...", "CC", "CE", "PA", "NIT" }));
+        jPanel1.add(tipocedula, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 100, 180, 40));
+
+        jLabel3.setText("Tipo de identificacion");
+        jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 80, -1, -1));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -189,32 +171,22 @@ public class CrearFuncionarioICA extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void tipoCedulaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tipoCedulaActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_tipoCedulaActionPerformed
-
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         try {
-            int idFuncionario = Integer.parseInt(idFuncionarioo.getText().trim());
             long numeroIdentificacion = Long.parseLong(cedula.getText().trim());
-            long celular = Long.parseLong(telefono.getText().trim());
-            String tipoIdentificacion = tipoCedula.getText().trim();
+            String tipoIdentificacion = (String) tipocedula.getSelectedItem();
             String primerNombre = PriNombre.getText().trim();
             String segundoNombre = segNombre.getText().trim();
             String primerApellido = priApellido.getText().trim();
             String segundoApellido = segApellido.getText().trim();
+            long celular = Long.parseLong(telefono.getText().trim());
             String correo = correoo.getText().trim();
             String password = contraseña.getText().trim();
             
             
-            FuncionarioICAController funcionarioICAController = new FuncionarioICAController();
+            FuncionarioICAController f = new FuncionarioICAController();
             
-            // === Validaciones de duplicados usando DAO (vía controller) ===
-            if (funcionarioICAController.existeIdFuncionario(idFuncionario)) {
-                JOptionPane.showMessageDialog(this, "❌ Ya existe un funcionario con ID " + idFuncionario + ".");
-                idFuncionarioo.requestFocus();
-                return;
-            }
+            
             
             if (tipoIdentificacion.isEmpty() || primerNombre.isEmpty() || primerApellido.isEmpty() || correo.isEmpty() || password.isEmpty()) {
 
@@ -222,36 +194,20 @@ public class CrearFuncionarioICA extends javax.swing.JFrame {
                 return;
             }
             
-            
-            funcionarioICAController.agregarFuncionarioICA(
-                    idFuncionario,
-                    numeroIdentificacion,
-                    tipoIdentificacion,
-                    primerNombre,
-                    segundoNombre,
-                    primerApellido,
-                    segundoApellido,
-                    celular,
-                    correo,
-                    password
-            );
-            
-            JOptionPane.showMessageDialog(this, "✅ Funcionario creado exitosamente.");
-            System.out.println("Funcionario creado exitosamente.");
+            int nuevoId = f.registrarFuncionarioAuto(numeroIdentificacion, tipoIdentificacion, primerNombre, segundoNombre, primerApellido, segundoApellido, celular, correo, password);
 
-            // Refrescar la tabla si hay callback
-            if (onFuncionarioGuardado != null) {
-                onFuncionarioGuardado.run();
+            if (nuevoId > 0) {
+                JOptionPane.showMessageDialog(this, "✅ Funcionario creado con ID " + nuevoId + ".");
+                if (onFuncionarioGuardado != null) onFuncionarioGuardado.run(); // refresca tabla
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "❌ Error al crear el funcionario.");
             }
 
-            // Cerrar la ventana
-            dispose();
-            
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Error: Los campos numéricos deben contener solo números.");
-            System.out.println("❌ Error: número inválido - " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Cédula y celular deben ser numéricos.");
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Ocurrió un error al guardar el tecnico.");
+            JOptionPane.showMessageDialog(this, "Ocurrió un error al guardar el funcionario.");
             ex.printStackTrace();
         }
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -259,10 +215,6 @@ public class CrearFuncionarioICA extends javax.swing.JFrame {
     private void segNombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_segNombreActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_segNombreActionPerformed
-
-    private void idFuncionariooActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_idFuncionariooActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_idFuncionariooActionPerformed
 
     private void cedulaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cedulaActionPerformed
         // TODO add your handling code here:
@@ -335,9 +287,7 @@ public class CrearFuncionarioICA extends javax.swing.JFrame {
     private javax.swing.JTextField cedula;
     private javax.swing.JTextField contraseña;
     private javax.swing.JTextField correoo;
-    private javax.swing.JTextField idFuncionarioo;
     private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
@@ -353,6 +303,6 @@ public class CrearFuncionarioICA extends javax.swing.JFrame {
     private javax.swing.JTextField segApellido;
     private javax.swing.JTextField segNombre;
     private javax.swing.JTextField telefono;
-    private javax.swing.JTextField tipoCedula;
+    private javax.swing.JComboBox<String> tipocedula;
     // End of variables declaration//GEN-END:variables
 }

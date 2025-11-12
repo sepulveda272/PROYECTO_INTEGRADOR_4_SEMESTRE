@@ -15,17 +15,12 @@ import modelo.FuncionarioICA;
  * @author ESTUDIANTE
  */
 class TablaFuncionarioICA extends javax.swing.JFrame {
-     private FuncionarioICAController funcionarioICAController;
-     //private int idProductor;
-    /**
-     * Creates new form Tabla
-     */
-    public TablaFuncionarioICA(/*int idProductor*/) {
+    private FuncionarioICAController funcionarioICAController;
+
+    public TablaFuncionarioICA() {
         initComponents();
-        funcionarioICAController = new FuncionarioICAController();
         setLocationRelativeTo(null);
-        /*this.idProductor = idProductor;
-        System.out.println(idProductor);*/
+        funcionarioICAController = new FuncionarioICAController();
         cargarFuncionarios();
     }
     
@@ -178,17 +173,17 @@ class TablaFuncionarioICA extends javax.swing.JFrame {
     private void botoneliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botoneliminarActionPerformed
         int viewRow = jTable1.getSelectedRow();
         if (viewRow == -1) { JOptionPane.showMessageDialog(this, "Seleccione un funcionario para eliminar."); return; }
-
         int row = jTable1.convertRowIndexToModel(viewRow);
-        int idFuncionario = Integer.parseInt(jTable1.getModel().getValueAt(row, 0).toString());
+        int idFuncionario = ((Number) jTable1.getModel().getValueAt(row, 0)).intValue();
 
-        int res = JOptionPane.showConfirmDialog(this, "¿Está seguro de inactivar este funcionario?", "Confirmar", JOptionPane.YES_NO_OPTION);
+        int res = JOptionPane.showConfirmDialog(this, "¿Está seguro de inactivar este funcionario?",
+                "Confirmar", JOptionPane.YES_NO_OPTION);
         if (res == JOptionPane.YES_OPTION) {
-            if (funcionarioICAController.desactivarFuncionario(idFuncionario)) {
+            if (funcionarioICAController.desactivarFuncionarioSeguro(idFuncionario)) {
                 JOptionPane.showMessageDialog(this, "✅ Funcionario inactivado.");
                 cargarFuncionarios();
             } else {
-                JOptionPane.showMessageDialog(this, "❌ No se pudo inactivar el funcionario. Verifique dependencias (LUGAR DE PRODUCCION).");
+                JOptionPane.showMessageDialog(this, "❌ No se pudo inactivar el funcionario. Verifique dependencias (OBSERVACIONES).");
             }
         }
     }//GEN-LAST:event_botoneliminarActionPerformed
