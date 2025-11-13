@@ -237,17 +237,30 @@ public class InspeccionFitosanitariaDAO {
 
     /* ===================== DELETE ===================== */
 
-    public boolean eliminarInspeccion(int idInspeccion) {
+    public String eliminarInspeccion(int idInspeccion) {
         final String sql = "DELETE FROM INSPECCION_FITOSANITARIA WHERE ID_INSPECCION = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, idInspeccion);
-            return ps.executeUpdate() > 0;
+            int filas = ps.executeUpdate();
+
+            if (filas == 0) {
+                return "No existe una inspección con ese ID.";
+            }
+
+            // null significa: todo OK.
+            return null;
         } catch (SQLException e) {
+            // ORA-02292: integrity constraint violated - child record found
+            if (e.getErrorCode() == 2292) {
+                return "No se puede eliminar la inspección porque tiene observaciones asociadas.";
+            }
+
             System.err.println("Error al eliminar inspección: " + e.getMessage());
             e.printStackTrace();
-            return false;
+            return "Error al eliminar inspección: " + e.getMessage();
         }
     }
+
 
     /* ===================== FECHAS (estricto yyyy-MM-dd) ===================== */
 

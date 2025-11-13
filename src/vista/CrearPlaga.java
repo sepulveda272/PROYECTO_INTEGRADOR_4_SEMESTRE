@@ -19,12 +19,10 @@ public class CrearPlaga extends javax.swing.JFrame {
     /**
      * Creates new form CrearCliente
      */
-    public CrearPlaga(/*String idusuario,*/Runnable onPlagaGuardado ) {
+    public CrearPlaga(Runnable onPlagaGuardado ) {
         initComponents();
         setLocationRelativeTo(null);
-        //this.idusuario=idusuario;
         this.onPlagaGuardado = onPlagaGuardado;
-        //System.out.println(idusuario);
     }
 
     /**
@@ -37,37 +35,28 @@ public class CrearPlaga extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        desc = new javax.swing.JTextField();
-        id__plaga = new javax.swing.JTextField();
         nombrecom = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         nombrecien = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setBackground(new java.awt.Color(255, 238, 208));
 
         jPanel1.setBackground(new java.awt.Color(237, 218, 197));
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-        jPanel1.add(desc, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 160, 180, 40));
-
-        id__plaga.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                id__plagaActionPerformed(evt);
-            }
-        });
-        jPanel1.add(id__plaga, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 90, 180, 40));
 
         nombrecom.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nombrecomActionPerformed(evt);
             }
         });
-        jPanel1.add(nombrecom, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 160, 180, 40));
+        jPanel1.add(nombrecom, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 90, 180, 40));
 
         jButton1.setText("Crear");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -75,7 +64,7 @@ public class CrearPlaga extends javax.swing.JFrame {
                 jButton1ActionPerformed(evt);
             }
         });
-        jPanel1.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 230, 170, 60));
+        jPanel1.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 270, 170, 60));
 
         nombrecien.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -84,22 +73,25 @@ public class CrearPlaga extends javax.swing.JFrame {
         });
         jPanel1.add(nombrecien, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 90, 180, 40));
 
-        jLabel1.setText("Id de la plaga");
-        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 70, -1, -1));
-
         jLabel2.setText("Nombre cientifico");
         jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 70, -1, -1));
 
         jLabel3.setText("Nombre comun");
-        jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(50, 140, -1, -1));
+        jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 70, -1, -1));
 
         jLabel4.setText("Descripcion ");
-        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 140, -1, -1));
+        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 150, -1, -1));
 
         jLabel12.setFont(new java.awt.Font("Cambria", 3, 48)); // NOI18N
         jLabel12.setForeground(new java.awt.Color(51, 153, 0));
         jLabel12.setText("Añadir plaga");
         jPanel1.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 0, 290, 60));
+
+        jTextArea1.setColumns(20);
+        jTextArea1.setRows(5);
+        jScrollPane1.setViewportView(jTextArea1);
+
+        jPanel1.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 170, 400, -1));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -109,7 +101,9 @@ public class CrearPlaga extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 322, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 339, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         pack();
@@ -121,58 +115,61 @@ public class CrearPlaga extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         try {
-            int idPlaga = Integer.parseInt(id__plaga.getText().trim());
             String nombreCientifica = nombrecien.getText().trim();
-            String nombreComun = nombrecom.getText().trim();
-            String descripcion = desc.getText().trim();
-            
-            PlagaController plagaController = new PlagaController();
-            
-            // Validaciones básicas
+            String nombreComun      = nombrecom.getText().trim();
+            String descripcion      = jTextArea1.getText().trim();
+
+            // Validaciones básicas en la vista
             if (nombreCientifica.isEmpty() || nombreComun.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor completa Nombre científico y Nombre común.");
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Por favor completa Nombre científico y Nombre común."
+                );
                 return;
             }
 
-            // === Validaciones de duplicados usando DAO (vía controller) ===
-            if (plagaController.existeIdPlaga(idPlaga)) {
-                JOptionPane.showMessageDialog(this, "❌ Ya existe una plaga con ID " + idPlaga + ".");
-                id__plaga.requestFocus();
-                return;
-            }
+            PlagaController plagaController = new PlagaController();
 
-            if (plagaController.existeNombreCientificoDup(nombreCientifica)) {
-                JOptionPane.showMessageDialog(this, "❌ Ya existe una plaga con nombre científico: " + nombreCientifica + ".");
+            // VALIDAR DUPLICADO POR NOMBRE CIENTÍFICO
+            if (plagaController.existeNombreCientifico(nombreCientifica)) {
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Ya existe una plaga con nombre científico: " + nombreCientifica + "."
+                );
                 nombrecien.requestFocus();
                 return;
             }
-            
-            
-            plagaController.agregarPlaga(idPlaga, nombreCientifica, nombreComun, descripcion);
-            
-            JOptionPane.showMessageDialog(this, "✅ Plaga creada exitosamente.");
-            System.out.println("Plaga creada exitosamente.");
 
-            // Refrescar la tabla si hay callback
-            if (onPlagaGuardado != null) {
-                onPlagaGuardado.run();
+            // Crear la plaga (el ID lo genera Oracle vía secuencia)
+            boolean creada = plagaController.agregarPlaga(
+                nombreCientifica,
+                nombreComun,
+                descripcion
+            );
+
+            if (creada) {
+                JOptionPane.showMessageDialog(this, "Plaga creada exitosamente.");
+
+                if (onPlagaGuardado != null) {
+                    onPlagaGuardado.run(); // refrescar tabla
+                }
+
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(
+                    this,
+                    "No se pudo crear la plaga. Verifica los datos o revisa la consola."
+                );
             }
 
-            // Cerrar la ventana
-            dispose();
-            
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Error: Los campos numéricos deben contener solo números.");
-            System.out.println("❌ Error: número inválido - " + e.getMessage());
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Ocurrió un error al guardar el la plaga.");
+            JOptionPane.showMessageDialog(
+                this,
+                "Ocurrió un error al guardar la plaga."
+            );
             ex.printStackTrace();
         }
     }//GEN-LAST:event_jButton1ActionPerformed
-
-    private void id__plagaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_id__plagaActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_id__plagaActionPerformed
 
     private void nombrecienActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nombrecienActionPerformed
         // TODO add your handling code here:
@@ -217,15 +214,14 @@ public class CrearPlaga extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField desc;
-    private javax.swing.JTextField id__plaga;
     private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField nombrecien;
     private javax.swing.JTextField nombrecom;
     // End of variables declaration//GEN-END:variables

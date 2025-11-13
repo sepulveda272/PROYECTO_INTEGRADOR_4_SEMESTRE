@@ -165,17 +165,24 @@ class TablaInspeccion extends javax.swing.JFrame {
 
     private void botoneliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botoneliminarActionPerformed
         int viewRow = jTable1.getSelectedRow();
-        if (viewRow == -1) { JOptionPane.showMessageDialog(this, "Seleccione una inspección."); return; }
+        if (viewRow == -1) {
+            JOptionPane.showMessageDialog(this, "Seleccione una inspección.");
+            return;
+        }
+
         int row = jTable1.convertRowIndexToModel(viewRow);
         int id = Integer.parseInt(jTable1.getModel().getValueAt(row, 0).toString());
 
         int res = JOptionPane.showConfirmDialog(this, "¿Eliminar esta inspección?", "Confirmar", JOptionPane.YES_NO_OPTION);
         if (res == JOptionPane.YES_OPTION) {
-            if (inspeccionFitosanitariaController.eliminar(id)) {
+
+            String error = inspeccionFitosanitariaController.eliminar(id);
+
+            if (error == null) {
                 JOptionPane.showMessageDialog(this, "✅ Inspección eliminada.");
                 cargarInspecciones();
             } else {
-                JOptionPane.showMessageDialog(this, "❌ No se pudo eliminar.");
+                JOptionPane.showMessageDialog(this, "❌ No se pudo eliminar. Verifique dependencias (OBSERVACION).");
             }
         }
     }//GEN-LAST:event_botoneliminarActionPerformed

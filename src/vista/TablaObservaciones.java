@@ -4,45 +4,42 @@
  */
 package vista;
 
-import controlador.PlagaController;
+import controlador.ObservacionesController;
+import modelo.Observaciones;
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.table.*;
 import java.util.List;
-import modelo.Plaga;
 
 /**
  *
  * @author ESTUDIANTE
  */
-class TablaPlaga extends javax.swing.JFrame {
-     private PlagaController plagaController;
-     //private int idProductor;
-    /**
-     * Creates new form Tabla
-     */
-    public TablaPlaga(/*int idProductor*/) {
-        initComponents();
-        plagaController = new PlagaController();
-        setLocationRelativeTo(null);
-        /*this.idProductor = idProductor;
-        System.out.println(idProductor);*/
-        cargarPlaga();
-    }
-    
-     private void cargarPlaga() {
-        DefaultTableModel modelo = new DefaultTableModel();
-        modelo.addColumn("ID Plaga");
-        modelo.addColumn("Nombre científico");
-        modelo.addColumn("Nombre común");
-        modelo.addColumn("Descripción");
+class TablaObservaciones extends javax.swing.JFrame {
+    private ObservacionesController observacionesController;
 
-        List<Plaga> plagas = plagaController.listarPlagas();
-        for (Plaga p : plagas) {
+    public TablaObservaciones() {
+        initComponents();
+        observacionesController = new ObservacionesController();
+        setLocationRelativeTo(null);
+        cargarObservaciones();
+    }
+
+    private void cargarObservaciones() {
+        DefaultTableModel modelo = new DefaultTableModel();
+        modelo.addColumn("ID Obs");
+        modelo.addColumn("Fecha obs");
+        modelo.addColumn("Texto observación");
+        modelo.addColumn("ID inspección");
+        modelo.addColumn("Funcionario"); // nombre
+
+        List<Observaciones> lista = observacionesController.listarTodas();
+        for (Observaciones o : lista) {
             Object[] fila = {
-                p.getId_plaga(),
-                p.getNombre_cientifico(),
-                p.getNombre_comun(),
-                p.getDescripcion()
+                o.getId_observacion(),
+                o.getFecha_observacion(),     // "yyyy-MM-dd"
+                o.getObservaciones(),
+                o.getId_inspeccion(),
+                o.getNombre_Funcionario()// viene del JOIN del DAO
             };
             modelo.addRow(fila);
         }
@@ -113,14 +110,14 @@ class TablaPlaga extends javax.swing.JFrame {
 
         jLabel1.setFont(new java.awt.Font("Cambria", 3, 48)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(51, 153, 0));
-        jLabel1.setText("Plagas");
-        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 20, 160, 60));
+        jLabel1.setText("Observaciones");
+        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 20, 320, 60));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 896, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 884, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -131,45 +128,55 @@ class TablaPlaga extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void botoncrearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botoncrearActionPerformed
-        CrearPlaga crear = new CrearPlaga(this::cargarPlaga);
+        CrearObservacion crear = new CrearObservacion(this::cargarObservaciones);
         crear.setVisible(true);
     }//GEN-LAST:event_botoncrearActionPerformed
 
     private void botoneditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botoneditarActionPerformed
-        int fila = jTable1.getSelectedRow();
-
-        if (fila == -1) {
-            JOptionPane.showMessageDialog(this, "Seleccione una plaga para editar.");
+        int viewRow = jTable1.getSelectedRow();
+        if (viewRow == -1) {
+            JOptionPane.showMessageDialog(this, "Seleccione una observación.");
             return;
         }
 
-        int idPlaga = Integer.parseInt(jTable1.getValueAt(fila, 0).toString());
-        String nombreCientifico = jTable1.getValueAt(fila, 1).toString();
-        String nombreComun = jTable1.getValueAt(fila, 2).toString();
-        String descripcion = jTable1.getValueAt(fila, 3) != null ? jTable1.getValueAt(fila, 3).toString() : "";
+        int row       = jTable1.convertRowIndexToModel(viewRow);
+        int idObs     = Integer.parseInt(jTable1.getModel().getValueAt(row, 0).toString());
+        String fecha  = String.valueOf(jTable1.getModel().getValueAt(row, 1));
+        String texto  = String.valueOf(jTable1.getModel().getValueAt(row, 2));
+        int idInsp    = Integer.parseInt(jTable1.getModel().getValueAt(row, 3).toString());
+        // El funcionario lo elegimos por combo, así que podemos pasar 0
+        int idFunc    = 0; 
 
-        ActualizarPlaga actualizar = new ActualizarPlaga(
-            idPlaga, nombreCientifico, nombreComun,
-            descripcion, this::cargarPlaga
+        ActualizarObservacion actualizar = new ActualizarObservacion(
+            idObs, fecha, texto, idInsp, idFunc, this::cargarObservaciones
         );
         actualizar.setVisible(true);
     }//GEN-LAST:event_botoneditarActionPerformed
 
     private void botoneliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botoneliminarActionPerformed
-        int fila = jTable1.getSelectedRow();
-        if (fila == -1) {
-            JOptionPane.showMessageDialog(this, "Seleccione una plaga para eliminar.");
+        int viewRow = jTable1.getSelectedRow();
+        if (viewRow == -1) {
+            JOptionPane.showMessageDialog(this, "Seleccione una observación.");
             return;
         }
-        int idPlaga = Integer.parseInt(jTable1.getValueAt(fila, 0).toString());
-        int res = JOptionPane.showConfirmDialog(this, "¿Está seguro de eliminar esta plaga?",
-                "Confirmar", JOptionPane.YES_NO_OPTION);
+
+        int row   = jTable1.convertRowIndexToModel(viewRow);
+        int idObs = Integer.parseInt(jTable1.getModel().getValueAt(row, 0).toString());
+
+        int res = JOptionPane.showConfirmDialog(
+                this,
+                "¿Eliminar esta observación?",
+                "Confirmar",
+                JOptionPane.YES_NO_OPTION
+        );
+
         if (res == JOptionPane.YES_OPTION) {
-            if (plagaController.eliminarPlaga(idPlaga)) {
-                JOptionPane.showMessageDialog(this, "✅ Plaga eliminada correctamente.");
-                cargarPlaga();
+            String error = observacionesController.eliminar(idObs);
+            if (error == null) {
+                JOptionPane.showMessageDialog(this, "✅ Observación eliminada.");
+                cargarObservaciones();
             } else {
-                JOptionPane.showMessageDialog(this, "❌ No se pudo eliminar la plaga Verifique dependencias (AFECTADAS).");
+                JOptionPane.showMessageDialog(this, error, "No se pudo eliminar", JOptionPane.WARNING_MESSAGE);
             }
         }
     }//GEN-LAST:event_botoneliminarActionPerformed
@@ -191,21 +198,35 @@ class TablaPlaga extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(TablaPlaga.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(TablaObservaciones.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(TablaPlaga.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(TablaObservaciones.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(TablaPlaga.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(TablaObservaciones.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(TablaPlaga.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(TablaObservaciones.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
         //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new TablaPlaga().setVisible(true);
+                new TablaObservaciones().setVisible(true);
             }
         });
     }

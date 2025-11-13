@@ -79,9 +79,15 @@ public class InspeccionFitosanitariaController {
         return inspeccionDAO.listarInspeccionesConTecnicoEIncidencia();
     }
 
-    public boolean eliminar(int idInspeccion) {
-        boolean ok = inspeccionDAO.eliminarInspeccion(idInspeccion);
-        System.out.println(ok ? "✅ Eliminada" : "❌ No se pudo eliminar");
-        return ok;
+    public String eliminar(int idInspeccion) {
+        String error = inspeccionDAO.eliminarInspeccion(idInspeccion);
+
+        if (error == null) {
+            System.out.println("✅ Inspección eliminada");
+        } else {
+            System.out.println("❌ No se pudo eliminar: " + error);
+        }
+
+        return error;
     }
 }

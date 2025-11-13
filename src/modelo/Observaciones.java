@@ -14,19 +14,19 @@ public class Observaciones {
     private String Observaciones;
     private int Id_inspeccion;
     private int Id_funcionario;
-    private int Id_productor;
+    private String Nombre_Funcionario;
 
     public Observaciones() {
     }
 
     public Observaciones(int Id_observacion, String Fecha_observacion, String Observaciones,
-                         int Id_inspeccion, int Id_funcionario, int Id_productor) {
+                         int Id_inspeccion, int Id_funcionario, String Nombre_Funcionario) {
         this.Id_observacion = Id_observacion;
         this.Fecha_observacion = Fecha_observacion;
         this.Observaciones = Observaciones;
         this.Id_inspeccion = Id_inspeccion;
         this.Id_funcionario = Id_funcionario;
-        this.Id_productor = Id_productor;
+        this.Nombre_Funcionario = Nombre_Funcionario;
     }
 
     public int getId_observacion() {
@@ -49,8 +49,8 @@ public class Observaciones {
         return Id_funcionario;
     }
 
-    public int getId_productor() {
-        return Id_productor;
+    public String getNombre_Funcionario() {
+        return Nombre_Funcionario;
     }
 
     public void setId_observacion(int Id_observacion) {
@@ -73,8 +73,8 @@ public class Observaciones {
         this.Id_funcionario = Id_funcionario;
     }
 
-    public void setId_productor(int Id_productor) {
-        this.Id_productor = Id_productor;
+    public void setNombre_Funcionario(String Nombre_Funcionario) {
+        this.Nombre_Funcionario = Nombre_Funcionario;
     }
     
     public String[] split(String string) {

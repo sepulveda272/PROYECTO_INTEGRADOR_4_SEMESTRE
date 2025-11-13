@@ -12,164 +12,180 @@ import java.util.List;
  * @author ADMIN
  */
 public class PlagaDAO {
-    private Connection conexion;
+    private final Connection conexion;
 
     public PlagaDAO() {
-        this.conexion = ConexionBD.getInstancia().getConnection(); // NO cierres esta conexión aquí
+        this.conexion = ConexionBD.getInstancia().getConnection();
     }
 
-    // CREATE: insertar una plaga (con ID explícito, igual que tu otro DAO)
+    /* ===================== SECUENCIA ===================== */
+    /**
+     * Obtiene el siguiente id_plaga desde la secuencia Oracle seq_plaga.
+     */
+    public int siguienteIdPlaga() {
+        String sql = "SELECT seq_plaga.NEXTVAL FROM dual";
+        try (PreparedStatement ps = conexion.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error obteniendo siguiente id_plaga: " + e.getMessage());
+        }
+        return -1; // valor de error
+    }
+
+    /* ===================== INSERTAR ===================== */
+    /**
+     * Inserta una nueva plaga usando la secuencia para id_plaga.
+     */
     public boolean insertarPlaga(Plaga plaga) {
-        String sql = "INSERT INTO PLAGAS " +
-                     "(ID_PLAGA, NOMBRE_CIENTIFICA, NOMBRE_COMUN, DESCRIPCION) " +
-                     "VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO plagas (id_plaga, nombre_cientifica, nombre_comun, descripcion) "
+                   + "VALUES (?, ?, ?, ?)";
+
+        int nuevoId = siguienteIdPlaga();
+        if (nuevoId == -1) {
+            return false;
+        }
 
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, plaga.getId_plaga());
+            ps.setInt(1, nuevoId);
             ps.setString(2, plaga.getNombre_cientifico());
             ps.setString(3, plaga.getNombre_comun());
+            ps.setString(4, plaga.getDescripcion());
+            int filas = ps.executeUpdate();
 
-            if (plaga.getDescripcion() == null || plaga.getDescripcion().trim().isEmpty()) {
-                ps.setNull(4, Types.VARCHAR);
-            } else {
-                ps.setString(4, plaga.getDescripcion());
+            if (filas > 0) {
+                plaga.setId_plaga(nuevoId); // actualizar el objeto en memoria
+                return true;
             }
-
-            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error insertando plaga: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /* ===================== ACTUALIZAR ===================== */
+    /**
+     * Actualiza los datos de una plaga existente.
+     */
+    public boolean actualizarPlaga(Plaga plaga) {
+        String sql = "UPDATE plagas "
+                   + "SET nombre_cientifica = ?, "
+                   + "    nombre_comun = ?, "
+                   + "    descripcion = ? "
+                   + "WHERE id_plaga = ?";
+
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setString(1, plaga.getNombre_cientifico());
+            ps.setString(2, plaga.getNombre_comun());
+            ps.setString(3, plaga.getDescripcion());
+            ps.setInt(4, plaga.getId_plaga());
+
+            int filas = ps.executeUpdate();
+            return filas > 0;
+        } catch (SQLException e) {
+            System.err.println("Error actualizando plaga: " + e.getMessage());
             return false;
         }
     }
 
-    // READ: listar todas las plagas
+    /* ===================== VALIDAR REFERENCIAS ===================== */
+    /**
+     * Verifica si la plaga está siendo usada en la tabla afectado.
+     * Si COUNT(*) > 0 significa que está referenciada y NO se debería eliminar.
+     */
+    public boolean tieneReferenciasEnAfectado(int idPlaga) {
+        String sql = "SELECT COUNT(*) FROM afectado WHERE id_plaga = ?";
+
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setInt(1, idPlaga);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int cantidad = rs.getInt(1);
+                    return cantidad > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error verificando referencias en afectado: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /* ===================== ELIMINAR ===================== */
+    /**
+     * Elimina una plaga únicamente si no está referenciada en la tabla afectado.
+     */
+    public boolean eliminarPlaga(int idPlaga) {
+        // Primero verificamos si está referenciada
+        if (tieneReferenciasEnAfectado(idPlaga)) {
+            System.out.println("No se puede eliminar la plaga. Está referenciada en la tabla afectado.");
+            return false;
+        }
+
+        String sql = "DELETE FROM plagas WHERE id_plaga = ?";
+
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setInt(1, idPlaga);
+            int filas = ps.executeUpdate();
+            return filas > 0;
+        } catch (SQLException e) {
+            System.err.println("Error eliminando plaga: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /* ===================== OBTENER POR ID ===================== */
+    /**
+     * Obtiene una plaga por su ID.
+     */
+    public Plaga obtenerPlagaPorId(int idPlaga) {
+        String sql = "SELECT id_plaga, nombre_cientifica, nombre_comun, descripcion "
+                   + "FROM plagas WHERE id_plaga = ?";
+
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+            ps.setInt(1, idPlaga);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Plaga plaga = new Plaga();
+                    plaga.setId_plaga(rs.getInt("id_plaga"));
+                    plaga.setNombre_cientifico(rs.getString("nombre_cientifica"));
+                    plaga.setNombre_comun(rs.getString("nombre_comun"));
+                    plaga.setDescripcion(rs.getString("descripcion"));
+                    return plaga;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error obteniendo plaga por id: " + e.getMessage());
+        }
+        return null;
+    }
+
+    /* ===================== LISTAR TODAS ===================== */
+    /**
+     * Lista todas las plagas registradas.
+     */
     public List<Plaga> listarPlagas() {
         List<Plaga> lista = new ArrayList<>();
-        String sql = "SELECT ID_PLAGA, NOMBRE_CIENTIFICA, NOMBRE_COMUN, DESCRIPCION FROM PLAGAS ORDER BY ID_PLAGA";
+        String sql = "SELECT id_plaga, nombre_cientifica, nombre_comun, descripcion "
+                   + "FROM plagas ORDER BY id_plaga";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                Plaga p = new Plaga();
-                p.setId_plaga(rs.getInt("ID_PLAGA"));
-                p.setNombre_cientifico(rs.getString("NOMBRE_CIENTIFICA"));
-                p.setNombre_comun(rs.getString("NOMBRE_COMUN"));
-                p.setDescripcion(rs.getString("DESCRIPCION"));
-                lista.add(p);
+                Plaga plaga = new Plaga();
+                plaga.setId_plaga(rs.getInt("id_plaga"));
+                plaga.setNombre_cientifico(rs.getString("nombre_cientifica"));
+                plaga.setNombre_comun(rs.getString("nombre_comun"));
+                plaga.setDescripcion(rs.getString("descripcion"));
+
+                lista.add(plaga);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error listando plagas: " + e.getMessage());
         }
         return lista;
-    }
-
-    // READ: buscar por ID
-    /*public Plaga buscarPorId(int idPlaga) {
-        String sql = "SELECT ID_PLAGA, NOMBRE_CIENTIFICA, NOMBRE_COMUN, DESCRIPCION FROM PLAGAS WHERE ID_PLAGA = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, idPlaga);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    Plaga p = new Plaga();
-                    p.setId_plaga(rs.getInt("ID_PLAGA"));
-                    p.setNombre_cientifico(rs.getString("NOMBRE_CIENTIFICO"));
-                    p.setNombre_comun(rs.getString("NOMBRE_COMUN"));
-                    p.setDescripcion(rs.getString("DESCRIPCION"));
-                    return p;
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }*/
-
-    // READ: buscar por nombre científico (exacto)
-    /*public Plaga buscarPorNombreCientifico(String nombreCientifico) {
-        String sql = "SELECT ID_PLAGA, NOMBRE_CIENTIFICA, NOMBRE_COMUN, DESCRIPCION FROM PLAGAS WHERE UPPER(NOMBRE_CIENTIFICA) = UPPER(?)";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setString(1, nombreCientifico);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    Plaga p = new Plaga();
-                    p.setId_plaga(rs.getInt("ID_PLAGA"));
-                    p.setNombre_cientifico(rs.getString("NOMBRE_CIENTIFICA"));
-                    p.setNombre_comun(rs.getString("NOMBRE_COMUN"));
-                    p.setDescripcion(rs.getString("DESCRIPCION"));
-                    return p;
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }*/
-
-    // UPDATE
-    public boolean actualizarPlaga(Plaga plaga) {
-        String sql = "UPDATE PLAGAS SET " +
-                     "NOMBRE_CIENTIFICA = ?, " +
-                     "NOMBRE_COMUN = ?, " +
-                     "DESCRIPCION = ? " +
-                     "WHERE ID_PLAGA = ?";
-
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setString(1, plaga.getNombre_cientifico());
-            ps.setString(2, plaga.getNombre_comun());
-
-            if (plaga.getDescripcion() == null || plaga.getDescripcion().trim().isEmpty()) {
-                ps.setNull(3, Types.VARCHAR);
-            } else {
-                ps.setString(3, plaga.getDescripcion());
-            }
-
-            ps.setInt(4, plaga.getId_plaga());
-            return ps.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    // DELETE
-    public boolean eliminarPlaga(int idPlaga) {
-        String sql = "DELETE FROM PLAGAS WHERE ID_PLAGA = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, idPlaga);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    // EXISTS por ID
-    public boolean existePlaga(int idPlaga) {
-        String sql = "SELECT COUNT(*) FROM PLAGAS WHERE ID_PLAGA = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, idPlaga);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1) > 0;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    // EXISTS por nombre científico (evitar duplicados)
-    public boolean existeNombreCientifico(String nombreCientifico) {
-        String sql = "SELECT COUNT(*) FROM PLAGAS WHERE UPPER(NOMBRE_CIENTIFICA) = UPPER(?)";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setString(1, nombreCientifico);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1) > 0;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
     }
 }

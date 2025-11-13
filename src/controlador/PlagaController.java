@@ -18,85 +18,159 @@ public class PlagaController {
         this.plagaDAO = new PlagaDAO();
     }
 
+    /* ============================================================
+     * MÉTODOS PRIVADOS DE APOYO (VALIDACIONES / EXISTENCIAS)
+     * ============================================================ */
+
     /**
-     * Crear/insertar una plaga
+     * Verifica si existe una plaga con el ID dado.
      */
-    public boolean agregarPlaga(int idPlaga, String nombreCientifico, String nombreComun, String descripcion) {
+    private boolean existePlagaPorId(int idPlaga) {
+        return plagaDAO.obtenerPlagaPorId(idPlaga) != null;
+    }
+
+    /**
+     * Verifica si ya existe una plaga con el mismo nombre científico.
+     * Busca sobre la lista completa de plagas (para no tocar tu DAO).
+     */
+    public boolean existeNombreCientifico(String nombreCientifico) {
+        if (nombreCientifico == null || nombreCientifico.trim().isEmpty()) {
+            return false;
+        }
+        String buscado = nombreCientifico.trim().toLowerCase();
+
+        List<Plaga> plagas = plagaDAO.listarPlagas();
+        for (Plaga p : plagas) {
+            if (p.getNombre_cientifico() != null &&
+                p.getNombre_cientifico().trim().toLowerCase().equals(buscado)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Verifica si ya existe OTRA plaga con el mismo nombre científico
+     * (se usa al actualizar, para no chocar contra sí misma).
+     */
+    public boolean existeNombreCientificoEnOtraPlaga(int idPlaga, String nombreCientifico) {
+        if (nombreCientifico == null || nombreCientifico.trim().isEmpty()) {
+            return false;
+        }
+        String buscado = nombreCientifico.trim().toLowerCase();
+
+        List<Plaga> plagas = plagaDAO.listarPlagas();
+        for (Plaga p : plagas) {
+            if (p.getId_plaga() != idPlaga &&
+                p.getNombre_cientifico() != null &&
+                p.getNombre_cientifico().trim().toLowerCase().equals(buscado)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /* ============================================================
+     * CRUD: CREAR
+     * ============================================================ */
+
+    /**
+     * Crear/insertar una plaga.
+     * El id_plaga lo genera la secuencia seq_plaga en PlagaDAO.
+     */
+    public boolean agregarPlaga(String nombreCientifico, String nombreComun, String descripcion) {
         // Validaciones mínimas
         if (nombreCientifico == null || nombreCientifico.trim().isEmpty()) {
-            System.out.println("❌ El nombre científico es obligatorio.");
+            System.out.println("[ERROR] El nombre científico es obligatorio.");
             return false;
         }
         if (nombreComun == null || nombreComun.trim().isEmpty()) {
-            System.out.println("❌ El nombre común es obligatorio.");
-            return false;
-        }
-
-        // Evitar duplicados por ID
-        if (plagaDAO.existePlaga(idPlaga)) {
-            System.out.println("❌ Ya existe una plaga con ID " + idPlaga + ".");
+            System.out.println("[ERROR] El nombre común es obligatorio.");
             return false;
         }
 
         // Evitar duplicados por nombre científico
-        if (plagaDAO.existeNombreCientifico(nombreCientifico)) {
-            System.out.println("❌ Ya existe una plaga con nombre científico: " + nombreCientifico + ".");
+        if (existeNombreCientifico(nombreCientifico)) {
+            System.out.println("[ERROR] Ya existe una plaga con nombre científico: " + nombreCientifico + ".");
             return false;
         }
 
-        Plaga p = new Plaga(
-            idPlaga,
-            nombreCientifico.trim(),
-            nombreComun.trim(),
-            (descripcion == null || descripcion.trim().isEmpty()) ? null : descripcion.trim()
+        Plaga p = new Plaga();
+        p.setNombre_cientifico(nombreCientifico.trim());
+        p.setNombre_comun(nombreComun.trim());
+        p.setDescripcion(
+            (descripcion == null || descripcion.trim().isEmpty())
+                ? null
+                : descripcion.trim()
         );
 
         boolean ok = plagaDAO.insertarPlaga(p);
-        if (ok) System.out.println("✅ Plaga agregada con éxito.");
-        else    System.out.println("❌ Error al agregar la plaga.");
+        if (ok) {
+            System.out.println("[OK] Plaga agregada con éxito. ID generado: " + p.getId_plaga());
+        } else {
+            System.out.println("[ERROR] Error al agregar la plaga.");
+        }
 
         return ok;
     }
-    
-    // En PlagaController
-    public boolean existeIdPlaga(int idPlaga) {
-        return plagaDAO.existePlaga(idPlaga);
-    }
 
-    public boolean existeNombreCientificoDup(String nombreCientifico) {
-        return plagaDAO.existeNombreCientifico(nombreCientifico);
-    }
-
+    /* ============================================================
+     * CRUD: LEER / LISTAR
+     * ============================================================ */
 
     /**
-     * Listar todas las plagas
+     * Listar todas las plagas.
      */
     public List<Plaga> listarPlagas() {
         List<Plaga> plagas = plagaDAO.listarPlagas();
 
         if (plagas.isEmpty()) {
-            System.out.println("⚠️ No hay plagas registradas.");
+            System.out.println("[INFO] No hay plagas registradas.");
         } else {
-            System.out.println("✅ Se encontraron " + plagas.size() + " plagas.");
+            System.out.println("[INFO] Se encontraron " + plagas.size() + " plagas.");
         }
 
         return plagas;
     }
 
     /**
-     * Actualizar una plaga existente
+     * Buscar una plaga por ID (útil para la UI).
+     */
+    public Plaga buscarPlagaPorId(int idPlaga) {
+        Plaga p = plagaDAO.obtenerPlagaPorId(idPlaga);
+        if (p == null) {
+            System.out.println("[ADVERTENCIA] No se encontró plaga con ID: " + idPlaga + ".");
+        }
+        return p;
+    }
+
+    /* ============================================================
+     * CRUD: ACTUALIZAR
+     * ============================================================ */
+
+    /**
+     * Actualizar una plaga existente.
      */
     public boolean actualizarPlaga(int idPlaga, String nombreCientifico, String nombreComun, String descripcion) {
-        if (!plagaDAO.existePlaga(idPlaga)) {
-            System.out.println("❌ No existe la plaga con ID " + idPlaga + ". No se puede actualizar.");
+        // Verificar existencia
+        if (!existePlagaPorId(idPlaga)) {
+            System.out.println("[ERROR] No existe la plaga con ID " + idPlaga + ". No se puede actualizar.");
             return false;
         }
+
+        // Validaciones de campos
         if (nombreCientifico == null || nombreCientifico.trim().isEmpty()) {
-            System.out.println("❌ El nombre científico es obligatorio.");
+            System.out.println("[ERROR] El nombre científico es obligatorio.");
             return false;
         }
         if (nombreComun == null || nombreComun.trim().isEmpty()) {
-            System.out.println("❌ El nombre común es obligatorio.");
+            System.out.println("[ERROR] El nombre común es obligatorio.");
+            return false;
+        }
+
+        // Validar que no exista otra plaga con el mismo nombre científico
+        if (existeNombreCientificoEnOtraPlaga(idPlaga, nombreCientifico)) {
+            System.out.println("[ERROR] Ya existe otra plaga con el mismo nombre científico: " + nombreCientifico + ".");
             return false;
         }
 
@@ -104,45 +178,53 @@ public class PlagaController {
         p.setId_plaga(idPlaga);
         p.setNombre_cientifico(nombreCientifico.trim());
         p.setNombre_comun(nombreComun.trim());
-        p.setDescripcion((descripcion == null || descripcion.trim().isEmpty()) ? null : descripcion.trim());
+        p.setDescripcion(
+            (descripcion == null || descripcion.trim().isEmpty())
+                ? null
+                : descripcion.trim()
+        );
 
         boolean ok = plagaDAO.actualizarPlaga(p);
 
-        if (ok) System.out.println("✅ Plaga actualizada correctamente (ID: " + idPlaga + ").");
-        else    System.out.println("❌ Error al actualizar la plaga (ID: " + idPlaga + ").");
+        if (ok) {
+            System.out.println("[OK] Plaga actualizada correctamente (ID: " + idPlaga + ").");
+        } else {
+            System.out.println("[ERROR] Error al actualizar la plaga (ID: " + idPlaga + ").");
+        }
 
         return ok;
     }
 
+    /* ============================================================
+     * CRUD: ELIMINAR
+     * ============================================================ */
+
     /**
-     * Eliminar una plaga por ID
+     * Eliminar una plaga por ID.
+     * Primero valida que exista y que no esté referenciada en la tabla afectado.
      */
-    public void eliminarPlaga(int idPlaga) {
+    public boolean eliminarPlaga(int idPlaga) {
+        // Verificar existencia
+        if (!existePlagaPorId(idPlaga)) {
+            System.out.println("[ERROR] No existe la plaga con ID " + idPlaga + ". No se puede eliminar.");
+            return false;
+        }
+
+        // Regla de negocio: no se puede eliminar si está referenciada en afectado
+        if (plagaDAO.tieneReferenciasEnAfectado(idPlaga)) {
+            System.out.println("[ERROR] No se puede eliminar la plaga (ID: " + idPlaga
+                    + ") porque está asociada a uno o más registros de 'afectado'.");
+            return false;
+        }
+
         boolean ok = plagaDAO.eliminarPlaga(idPlaga);
 
-        if (ok) System.out.println("✅ Plaga eliminada correctamente (ID: " + idPlaga + ").");
-        else    System.out.println("❌ Error al eliminar la plaga con ID: " + idPlaga + ".");
-    }
-
-    /**
-     * Buscar plaga por ID (útil para la UI)
-     */
-    /*public Plaga buscarPlagaPorId(int idPlaga) {
-        Plaga p = plagaDAO.buscarPorId(idPlaga);
-        if (p == null) System.out.println("⚠️ No se encontró plaga con ID: " + idPlaga + ".");
-        return p;
-    }*/
-
-    /**
-     * Buscar plaga por nombre científico (exacto)
-     */
-    /*public Plaga buscarPlagaPorNombreCientifico(String nombreCientifico) {
-        if (nombreCientifico == null || nombreCientifico.trim().isEmpty()) {
-            System.out.println("⚠️ Nombre científico vacío.");
-            return null;
+        if (ok) {
+            System.out.println("[OK] Plaga eliminada correctamente (ID: " + idPlaga + ").");
+        } else {
+            System.out.println("[ERROR] Error al eliminar la plaga con ID: " + idPlaga + ".");
         }
-        Plaga p = plagaDAO.buscarPorNombreCientifico(nombreCientifico.trim());
-        if (p == null) System.out.println("⚠️ No se encontró plaga con nombre científico: " + nombreCientifico + ".");
-        return p;
-    }*/
+
+        return ok;
+    }
 }

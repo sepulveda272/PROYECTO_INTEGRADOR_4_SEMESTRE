@@ -5,36 +5,109 @@
 package modelo;
 
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.List;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import modelo.ConexionBD;
 /**
  *
  * @author ADMIN
  */
+
+
+
 public class ObservacionesDAO {
-    private Connection conexion;
+    private final Connection conexion;
 
     public ObservacionesDAO() {
         this.conexion = ConexionBD.getInstancia().getConnection();
     }
 
+    /* ===================== FECHAS (estricto yyyy-MM-dd) ===================== */
+
+    private static final DateTimeFormatter FMT_YMD =
+            DateTimeFormatter.ofPattern("uuuu-MM-dd")
+                              .withResolverStyle(ResolverStyle.STRICT);
+
+    /** Convierte String "yyyy-MM-dd" a java.sql.Date, validando fecha real */
+    private java.sql.Date toSqlDateOrNullStrict(String s) {
+        if (s == null) return null;
+        String t = s.trim();
+        if (t.isEmpty()) return null;
+        try {
+            LocalDate ld = LocalDate.parse(t, FMT_YMD); // valida formato y fecha real
+            return java.sql.Date.valueOf(ld);
+        } catch (DateTimeParseException ex) {
+            // Mensaje CLARO para UI
+            throw new IllegalArgumentException(
+                "Formato de fecha inválido: \"" + s + "\". Usa yyyy-MM-dd (ej. 2025-11-09)."
+            );
+        }
+    }
+
+    /** Convierte java.sql.Date a String "yyyy-MM-dd" usando el mismo formato */
+    private String toYmdOrNull(java.sql.Date d) {
+        if (d == null) return null;
+        return d.toLocalDate().format(FMT_YMD);
+    }
+
     /* ===================== REGLAS DE NEGOCIO ===================== */
 
     private void validarReglas(Observaciones o) {
-        if (o.getFecha_observacion() == null || o.getFecha_observacion().trim().isEmpty()) {
-            throw new IllegalArgumentException("fecha_observacion es obligatoria");
+        if (o == null) {
+            throw new IllegalArgumentException("La observación no puede ser null.");
         }
+
+        // fecha_observacion
+        if (o.getFecha_observacion() == null || o.getFecha_observacion().trim().isEmpty()) {
+            throw new IllegalArgumentException("fecha_observacion es obligatoria.");
+        }
+        // valida que la fecha tenga formato y sea una fecha real
+        toSqlDateOrNullStrict(o.getFecha_observacion());
+
+        // texto observaciones
         if (o.getObservaciones() == null || o.getObservaciones().trim().isEmpty()) {
-            throw new IllegalArgumentException("observaciones es obligatorio");
+            throw new IllegalArgumentException("observaciones es obligatorio.");
         }
         if (o.getObservaciones().length() > 1000) {
-            throw new IllegalArgumentException("observaciones no puede superar 1000 caracteres");
+            throw new IllegalArgumentException("observaciones no puede superar 1000 caracteres.");
         }
+
+        // FK inspeccion
+        if (o.getId_inspeccion() <= 0) {
+            throw new IllegalArgumentException("id_inspeccion debe ser > 0.");
+        }
+        if (!existeInspeccion(o.getId_inspeccion())) {
+            throw new IllegalArgumentException("La inspección indicada no existe.");
+        }
+
+        // FK funcionario
+        if (o.getId_funcionario() <= 0) {
+            throw new IllegalArgumentException("id_funcionario debe ser > 0.");
+        }
+        if (!existeFuncionario(o.getId_funcionario())) {
+            throw new IllegalArgumentException("El funcionario indicado no existe.");
+        }
+    }
+
+    /* ===================== SECUENCIA ===================== */
+
+    /** Obtiene el siguiente ID_OBSERVACION desde la secuencia Oracle. */
+    public int obtenerSiguienteIdObservacion() {
+        String sql = "SELECT seq_observacion.NEXTVAL FROM dual";
+        try (PreparedStatement ps = conexion.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al obtener NEXTVAL de seq_observacion: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return -1; // señal de error
     }
 
     /* ===================== CREATE ===================== */
@@ -42,22 +115,32 @@ public class ObservacionesDAO {
     public boolean insertar(Observaciones o) {
         validarReglas(o);
 
+        int nuevoId = obtenerSiguienteIdObservacion();
+        if (nuevoId <= 0) {
+            throw new IllegalStateException("No se pudo obtener un nuevo ID para la observación.");
+        }
+
         String sql = "INSERT INTO OBSERVACIONES ("
-                + "ID_OBSERVACION, FECHA_OBSERVACION, OBSERVACIONES, ID_INSPECCION, ID_FUNCIONARIO"
-                + ") VALUES (?, ?, ?, ?, ?)";
+                   + "ID_OBSERVACION, FECHA_OBSERVACION, OBSERVACIONES, "
+                   + "ID_INSPECCION, ID_FUNCIONARIO"
+                   + ") VALUES (?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, o.getId_observacion());
-            ps.setString(2, o.getFecha_observacion());        // DATE como String "yyyy-MM-dd"
+            ps.setInt(1, nuevoId);
+            ps.setDate(2, toSqlDateOrNullStrict(o.getFecha_observacion())); // DATE con helper estricto
             ps.setString(3, o.getObservaciones());
             ps.setInt(4, o.getId_inspeccion());
             ps.setInt(5, o.getId_funcionario());
 
-            return ps.executeUpdate() > 0;
+            int filas = ps.executeUpdate();
+            if (filas > 0) {
+                o.setId_observacion(nuevoId); // reflejar en el objeto
+                return true;
+            }
         } catch (SQLException e) {
-            e.printStackTrace(); // para ver errores de PK/FK/CK
-            return false;
+            e.printStackTrace(); // aquí verás errores de PK/FK/CK
         }
+        return false;
     }
 
     /* ===================== READ ===================== */
@@ -65,9 +148,12 @@ public class ObservacionesDAO {
     public List<Observaciones> listar() {
         List<Observaciones> lista = new ArrayList<>();
 
-        String sql = "SELECT ID_OBSERVACION, FECHA_OBSERVACION, OBSERVACIONES, "
-                   + "ID_INSPECCION, ID_FUNCIONARIO "
-                   + "FROM OBSERVACIONES ORDER BY ID_OBSERVACION";
+        String sql = "SELECT o.ID_OBSERVACION, o.FECHA_OBSERVACION, o.OBSERVACIONES, "
+                   + "       o.ID_INSPECCION, o.ID_FUNCIONARIO, "
+                   + "       f.PRIMER_NOMBRE, f.PRIMER_APELLIDO "
+                   + "FROM   OBSERVACIONES o "
+                   + "JOIN   FUNCIONARIO_ICA f ON o.ID_FUNCIONARIO = f.ID_FUNCIONARIO "
+                   + "ORDER BY o.ID_OBSERVACION";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -77,12 +163,19 @@ public class ObservacionesDAO {
 
                 o.setId_observacion(rs.getInt("ID_OBSERVACION"));
 
-                Date f = rs.getDate("FECHA_OBSERVACION");
-                o.setFecha_observacion(f != null ? f.toString() : null); // "yyyy-MM-dd"
+                java.sql.Date f = rs.getDate("FECHA_OBSERVACION");
+                o.setFecha_observacion(toYmdOrNull(f)); // "yyyy-MM-dd"
 
                 o.setObservaciones(rs.getString("OBSERVACIONES"));
                 o.setId_inspeccion(rs.getInt("ID_INSPECCION"));
                 o.setId_funcionario(rs.getInt("ID_FUNCIONARIO"));
+
+                // Construimos el nombre del funcionario
+                String nombre   = rs.getString("PRIMER_NOMBRE");
+                String apellido = rs.getString("PRIMER_APELLIDO");
+                String nombreCompleto = ((nombre != null) ? nombre : "") + " " +
+                                        ((apellido != null) ? apellido : "");
+                o.setNombre_Funcionario(nombreCompleto.trim());
 
                 lista.add(o);
             }
@@ -93,15 +186,25 @@ public class ObservacionesDAO {
         return lista;
     }
 
-    // Opcional: listar por inspección (útil en la pantalla de detalles de una inspección)
+
+    /**
+     * Lista observaciones de una inspección, incluyendo el nombre del funcionario.
+     *
+     * Necesitas que la tabla FUNCIONARIO_ICA tenga columnas tipo PRIMER_NOMBRE, PRIMER_APELLIDO, etc.
+     * Además, en tu clase Observaciones deberías tener:
+     *   private String nombreFuncionario;
+     *   + getters/setters.
+     */
     public List<Observaciones> listarPorInspeccion(int idInspeccion) {
         List<Observaciones> lista = new ArrayList<>();
 
-        String sql = "SELECT ID_OBSERVACION, FECHA_OBSERVACION, OBSERVACIONES, "
-                   + "ID_INSPECCION, ID_FUNCIONARIO "
-                   + "FROM OBSERVACIONES "
-                   + "WHERE ID_INSPECCION = ? "
-                   + "ORDER BY FECHA_OBSERVACION";
+        String sql = "SELECT o.ID_OBSERVACION, o.FECHA_OBSERVACION, o.OBSERVACIONES, "
+                   + "       o.ID_INSPECCION, o.ID_FUNCIONARIO, "
+                   + "       f.PRIMER_NOMBRE, f.PRIMER_APELLIDO "
+                   + "FROM   OBSERVACIONES o "
+                   + "JOIN   FUNCIONARIO_ICA f ON o.ID_FUNCIONARIO = f.ID_FUNCIONARIO "
+                   + "WHERE  o.ID_INSPECCION = ? "
+                   + "ORDER BY o.FECHA_OBSERVACION";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, idInspeccion);
@@ -112,12 +215,20 @@ public class ObservacionesDAO {
 
                     o.setId_observacion(rs.getInt("ID_OBSERVACION"));
 
-                    Date f = rs.getDate("FECHA_OBSERVACION");
-                    o.setFecha_observacion(f != null ? f.toString() : null);
+                    java.sql.Date f = rs.getDate("FECHA_OBSERVACION");
+                    o.setFecha_observacion(toYmdOrNull(f));
 
                     o.setObservaciones(rs.getString("OBSERVACIONES"));
                     o.setId_inspeccion(rs.getInt("ID_INSPECCION"));
                     o.setId_funcionario(rs.getInt("ID_FUNCIONARIO"));
+
+                    // Armamos el nombre para mostrar (puedes ajustar aquí)
+                    String nombre = rs.getString("PRIMER_NOMBRE");
+                    String apellido = rs.getString("PRIMER_APELLIDO");
+                    String nombreCompleto = (nombre != null ? nombre : "") 
+                                           + " " 
+                                           + (apellido != null ? apellido : "");
+                    o.setNombre_Funcionario(nombreCompleto.trim());
 
                     lista.add(o);
                 }
@@ -135,14 +246,14 @@ public class ObservacionesDAO {
         validarReglas(o);
 
         String sql = "UPDATE OBSERVACIONES SET "
-                + "FECHA_OBSERVACION = ?, "
-                + "OBSERVACIONES = ?, "
-                + "ID_INSPECCION = ?, "
-                + "ID_FUNCIONARIO = ? "
-                + "WHERE ID_OBSERVACION = ?";
+                   + "FECHA_OBSERVACION = ?, "
+                   + "OBSERVACIONES = ?, "
+                   + "ID_INSPECCION = ?, "
+                   + "ID_FUNCIONARIO = ? "
+                   + "WHERE ID_OBSERVACION = ?";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setString(1, o.getFecha_observacion());
+            ps.setDate(1, toSqlDateOrNullStrict(o.getFecha_observacion()));
             ps.setString(2, o.getObservaciones());
             ps.setInt(3, o.getId_inspeccion());
             ps.setInt(4, o.getId_funcionario());
