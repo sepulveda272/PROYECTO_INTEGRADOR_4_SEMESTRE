@@ -7,10 +7,7 @@ package modelo;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-/**
- *
- * @author ADMIN
- */
+
 public class CultivoDAO {
     private final Connection conexion;
 
@@ -19,106 +16,101 @@ public class CultivoDAO {
     }
 
     /* ===================== VALIDACIONES ===================== */
-
     private void validarReglas(Cultivo c) {
         if (c == null) throw new IllegalArgumentException("El cultivo no puede ser null.");
-        if (isBlank(c.getNombre_especie())) {
-            throw new IllegalArgumentException("nombre_especie es obligatorio.");
-        }
-        if (isBlank(c.getVariedad())) {
-            throw new IllegalArgumentException("variedad es obligatoria.");
-        }
+        if (isBlank(c.getNombre_especie())) throw new IllegalArgumentException("nombre_especie es obligatorio.");
+        if (isBlank(c.getVariedad()))       throw new IllegalArgumentException("variedad es obligatoria.");
         // descripcion es opcional
     }
-
     private boolean isBlank(String s) { return s == null || s.trim().isEmpty(); }
 
-    /* ===================== SECUENCIA ===================== */
-
-    /** Obtiene el siguiente ID desde la secuencia Oracle. */
+    /* ===================== SECUENCIA (opcional) ===================== */
+    // Si quieres conservar este helper, que sea vía FUNCIÓN (no SELECT NEXTVAL)
     public int siguienteIdCultivo() {
-        final String sql = "SELECT seq_cultivo.NEXTVAL FROM dual"; // <-- cambia si tu secuencia tiene otro nombre
-        try (PreparedStatement ps = conexion.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getInt(1);
+        final String sql = "{ ? = call fn_next_cultivo_id() }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.registerOutParameter(1, Types.INTEGER);
+            cs.execute();
+            return cs.getInt(1);
         } catch (SQLException e) {
-            System.err.println("Error obteniendo NEXTVAL de seq_cultivo: " + e.getMessage());
+            System.err.println("Error obteniendo ID (función): " + e.getMessage());
             e.printStackTrace();
+            return -1;
         }
-        return -1; // señal de error
     }
 
     /* ===================== CREATE ===================== */
 
-    /** Inserta con ID provisto (no autogenerado). */
+    // Inserta con ID provisto (respeta tu método original)
     public boolean insertarCultivo(Cultivo c) {
         validarReglas(c);
-
-        final String sql = "INSERT INTO CULTIVO (ID_CULTIVO, NOMBRE_ESPECIE, VARIEDAD, DESCRIPCION) "
-                         + "VALUES (?, ?, ?, ?)";
-
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, c.getId_cultivo());
-            ps.setString(2, c.getNombre_especie());
-            ps.setString(3, c.getVariedad());
-            if (isBlank(c.getDescripcion())) {
-                ps.setNull(4, Types.VARCHAR);
-            } else {
-                ps.setString(4, c.getDescripcion());
-            }
-            return ps.executeUpdate() > 0;
-
+        final String sql = "{ call sp_insertar_cultivo_con_id(?, ?, ?, ?, ?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setInt(1, c.getId_cultivo());
+            cs.setString(2, c.getNombre_especie());
+            cs.setString(3, c.getVariedad());
+            if (isBlank(c.getDescripcion())) cs.setNull(4, Types.VARCHAR); else cs.setString(4, c.getDescripcion());
+            cs.registerOutParameter(5, Types.INTEGER); // p_filas
+            cs.execute();
+            return cs.getInt(5) > 0;
         } catch (SQLException e) {
-            System.err.println("Error al insertar cultivo: " + e.getMessage());
+            System.err.println("Error al insertar cultivo (SP con ID): " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
 
-    /** Inserta autogenerando ID desde la secuencia. Retorna el ID generado (>0) o -1 si falla. */
+    // Inserta auto (devuelve ID vía OUT)
     public int insertarCultivoAuto(Cultivo c) {
         validarReglas(c);
-
-        final int nuevoId = siguienteIdCultivo();
-        if (nuevoId <= 0) {
-            System.err.println("❌ No se pudo obtener NEXTVAL de la secuencia.");
+        final String sql = "{ call sp_insertar_cultivo(?, ?, ?, ?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setString(1, c.getNombre_especie());
+            cs.setString(2, c.getVariedad());
+            if (isBlank(c.getDescripcion())) cs.setNull(3, Types.VARCHAR); else cs.setString(3, c.getDescripcion());
+            cs.registerOutParameter(4, Types.INTEGER); // p_id_generado
+            cs.execute();
+            int id = cs.getInt(4);
+            c.setId_cultivo(id);
+            return id;
+        } catch (SQLException e) {
+            System.err.println("Error al insertar cultivo (SP auto): " + e.getMessage());
+            e.printStackTrace();
             return -1;
         }
-        c.setId_cultivo(nuevoId);
-        boolean ok = insertarCultivo(c);
-        return ok ? nuevoId : -1;
     }
 
     /* ===================== READ ===================== */
 
     public List<Cultivo> listarCultivos() {
         List<Cultivo> lista = new ArrayList<>();
-        final String sql = "SELECT ID_CULTIVO, NOMBRE_ESPECIE, VARIEDAD, DESCRIPCION "
-                         + "FROM CULTIVO "
-                         + "ORDER BY ID_CULTIVO";
-
-        try (PreparedStatement ps = conexion.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                lista.add(mapRow(rs));
+        final String sql = "{ call sp_listar_cultivos(?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.registerOutParameter(1, Types.REF_CURSOR);
+            cs.execute();
+            try (ResultSet rs = (ResultSet) cs.getObject(1)) {
+                while (rs.next()) lista.add(mapRow(rs));
             }
         } catch (SQLException e) {
+            System.err.println("Error listando cultivos (SP): " + e.getMessage());
             e.printStackTrace();
         }
         return lista;
     }
 
-    /** Búsqueda puntual por ID. Retorna null si no existe. */
     public Cultivo buscarPorId(int idCultivo) {
-        final String sql = "SELECT ID_CULTIVO, NOMBRE_ESPECIE, VARIEDAD, DESCRIPCION "
-                         + "FROM CULTIVO WHERE ID_CULTIVO = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, idCultivo);
-            try (ResultSet rs = ps.executeQuery()) {
+        final String sql = "{ call sp_buscar_cultivo_por_id(?, ?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setInt(1, idCultivo);
+            cs.registerOutParameter(2, Types.REF_CURSOR);
+            cs.execute();
+            try (ResultSet rs = (ResultSet) cs.getObject(2)) {
                 if (rs.next()) return mapRow(rs);
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            System.err.println("Error buscando cultivo por ID (SP): " + e.getMessage());
+            e.printStackTrace();
+        }
         return null;
     }
 
@@ -135,27 +127,17 @@ public class CultivoDAO {
 
     public boolean actualizarCultivo(Cultivo c) {
         validarReglas(c);
-
-        final String sql = "UPDATE CULTIVO SET "
-                         + "NOMBRE_ESPECIE = ?, "
-                         + "VARIEDAD = ?, "
-                         + "DESCRIPCION = ? "
-                         + "WHERE ID_CULTIVO = ?";
-
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setString(1, c.getNombre_especie());
-            ps.setString(2, c.getVariedad());
-            if (isBlank(c.getDescripcion())) {
-                ps.setNull(3, Types.VARCHAR);
-            } else {
-                ps.setString(3, c.getDescripcion());
-            }
-            ps.setInt(4, c.getId_cultivo());
-
-            return ps.executeUpdate() > 0;
-
+        final String sql = "{ call sp_actualizar_cultivo(?, ?, ?, ?, ?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setInt(1, c.getId_cultivo());
+            cs.setString(2, c.getNombre_especie());
+            cs.setString(3, c.getVariedad());
+            if (isBlank(c.getDescripcion())) cs.setNull(4, Types.VARCHAR); else cs.setString(4, c.getDescripcion());
+            cs.registerOutParameter(5, Types.INTEGER); // p_filas
+            cs.execute();
+            return cs.getInt(5) > 0;
         } catch (SQLException e) {
-            System.err.println("Error al actualizar cultivo: " + e.getMessage());
+            System.err.println("Error al actualizar cultivo (SP): " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -164,16 +146,19 @@ public class CultivoDAO {
     /* ===================== DELETE ===================== */
 
     public boolean eliminarCultivo(int idCultivo) {
-        final String sql = "DELETE FROM CULTIVO WHERE ID_CULTIVO = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, idCultivo);
-            return ps.executeUpdate() > 0;
-        } catch (SQLIntegrityConstraintViolationException fk) {
-            // FK en tablas dependientes (LOTE, etc.)
-            System.err.println("❌ No se puede eliminar el cultivo: está referenciado por otras tablas. " + fk.getMessage());
+        final String sql = "{ call sp_eliminar_cultivo(?, ?, ?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setInt(1, idCultivo);
+            cs.registerOutParameter(2, Types.INTEGER); // p_code
+            cs.registerOutParameter(3, Types.VARCHAR); // p_msg
+            cs.execute();
+            int code = cs.getInt(2);
+            String msg = cs.getString(3);
+            if (code == 0) return true;
+            System.err.println("❌ " + msg);
             return false;
         } catch (SQLException e) {
-            System.err.println("Error al eliminar cultivo: " + e.getMessage());
+            System.err.println("Error al eliminar cultivo (SP): " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -182,13 +167,17 @@ public class CultivoDAO {
     /* ===================== EXISTS ===================== */
 
     public boolean existeCultivo(int idCultivo) {
-        final String sql = "SELECT COUNT(*) FROM CULTIVO WHERE ID_CULTIVO = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, idCultivo);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1) > 0;
-            }
-        } catch (SQLException e) { e.printStackTrace(); }
-        return false;
+        final String sql = "{ call sp_existe_cultivo(?, ?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setInt(1, idCultivo);
+            cs.registerOutParameter(2, Types.INTEGER); // p_exists
+            cs.execute();
+            return cs.getInt(2) > 0;
+        } catch (SQLException e) {
+            System.err.println("Error en existeCultivo (SP): " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 }
+

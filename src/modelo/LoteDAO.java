@@ -5,6 +5,7 @@
 package modelo;
 
 
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,11 +13,13 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
+
 /**
  *
  * @author ADMIN
  */
 public class LoteDAO {
+
     private final Connection conexion;
 
     public LoteDAO() {
@@ -26,8 +29,10 @@ public class LoteDAO {
     /* ===================== VALIDACIONES ===================== */
 
     private void validarReglas(Lote l) {
-        if (l.getArea_total() <= 0) throw new IllegalArgumentException("area_total debe ser > 0.");
-        if (l.getArea_siembra() < 0) throw new IllegalArgumentException("area_siembra debe ser >= 0.");
+        if (l.getArea_total() <= 0)
+            throw new IllegalArgumentException("area_total debe ser > 0.");
+        if (l.getArea_siembra() < 0)
+            throw new IllegalArgumentException("area_siembra debe ser >= 0.");
         if (l.getArea_siembra() > l.getArea_total())
             throw new IllegalArgumentException("area_siembra no puede ser mayor que area_total.");
         if (isBlank(l.getEstado_fenologico()))
@@ -37,21 +42,8 @@ public class LoteDAO {
         // fecha_eliminacion es opcional
     }
 
-    private boolean isBlank(String s) { return s == null || s.trim().isEmpty(); }
-
-    /* ===================== SECUENCIA ===================== */
-
-    /** Obtiene el siguiente numero_lote desde la secuencia Oracle. */
-    public int siguienteNumeroLote() {
-        final String sql = "SELECT seq_lote.NEXTVAL FROM dual";
-        try (PreparedStatement ps = conexion.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getInt(1);
-        } catch (SQLException e) {
-            System.err.println("Error obteniendo NEXTVAL de seq_lote: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return -1; // señal de error
+    private boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
     }
 
     /* ===================== EXISTS / FKs ===================== */
@@ -60,8 +52,12 @@ public class LoteDAO {
         final String sql = "SELECT COUNT(*) FROM LOTE WHERE NUMERO_LOTE = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, numeroLote);
-            try (ResultSet rs = ps.executeQuery()) { if (rs.next()) return rs.getInt(1) > 0; }
-        } catch (SQLException e) { e.printStackTrace(); }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
@@ -69,8 +65,12 @@ public class LoteDAO {
         final String sql = "SELECT COUNT(*) FROM CULTIVO WHERE ID_CULTIVO = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, idCultivo);
-            try (ResultSet rs = ps.executeQuery()) { if (rs.next()) return rs.getInt(1) > 0; }
-        } catch (SQLException e) { e.printStackTrace(); }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
@@ -78,15 +78,23 @@ public class LoteDAO {
         final String sql = "SELECT COUNT(*) FROM LUGAR_PRODUCCION WHERE ID_LUGAR = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, idLugar);
-            try (ResultSet rs = ps.executeQuery()) { if (rs.next()) return rs.getInt(1) > 0; }
-        } catch (SQLException e) { e.printStackTrace(); }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
-    /* ===================== CREATE ===================== */
+    /* ===================== CREATE (SP + TRIGGER) ===================== */
 
-    /** Inserta con ID provisto (no autogenerado). */
-    public boolean insertarLote(Lote l) {
+    /**
+     * Inserta un lote usando el procedimiento almacenado pr_insertar_lote.
+     * El NUMERO_LOTE se genera en la BD mediante fn_generar_lote + tr_lote_bi.
+     * Retorna el número de lote generado (>0) o -1 si falla.
+     */
+    public int insertarLoteAuto(Lote l) {
         validarReglas(l);
 
         // Validar FKs explícitamente para mejores mensajes
@@ -97,59 +105,46 @@ public class LoteDAO {
             throw new IllegalArgumentException("El id_lugar " + l.getId_lugar() + " no existe.");
         }
 
-        final String sql = "INSERT INTO LOTE (" +
-                "NUMERO_LOTE, AREA_TOTAL, AREA_SIEMBRA, ESTADO_FENOLOGICO, " +
-                "FECHA_SIEMBRA, FECHA_ELIMINACION, ID_CULTIVO, ID_LUGAR) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        final String sql = "{ call pr_insertar_lote(?,?,?,?,?,?,?,?) }";
 
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, l.getNumero_lote());
-            ps.setDouble(2, l.getArea_total());
-            ps.setDouble(3, l.getArea_siembra());
-            ps.setString(4, l.getEstado_fenologico());
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
 
-            ps.setDate(5, toSqlDateOrNullStrict(l.getFecha_siembra()));
+            cs.setDouble(1, l.getArea_total());
+            cs.setDouble(2, l.getArea_siembra());
+            cs.setString(3, l.getEstado_fenologico());
+
+            cs.setDate(4, toSqlDateOrNullStrict(l.getFecha_siembra()));
             java.sql.Date fElim = toSqlDateOrNullStrict(l.getFecha_eliminacion());
-            if (fElim != null) ps.setDate(6, fElim); else ps.setNull(6, Types.DATE);
+            if (fElim != null) {
+                cs.setDate(5, fElim);
+            } else {
+                cs.setNull(5, Types.DATE);
+            }
 
-            ps.setInt(7, l.getId_cultivo());
-            ps.setInt(8, l.getId_lugar());
+            cs.setInt(6, l.getId_cultivo());
+            cs.setInt(7, l.getId_lugar());
 
-            return ps.executeUpdate() > 0;
+            cs.registerOutParameter(8, Types.INTEGER);
+
+            cs.execute();
+
+            int nuevoId = cs.getInt(8);
+            l.setNumero_lote(nuevoId);
+            return nuevoId;
 
         } catch (SQLException e) {
-            System.err.println("Error al insertar lote: " + e.getMessage());
+            System.err.println("Error al insertar lote (pr_insertar_lote): " + e.getMessage());
             e.printStackTrace();
-            return false;
-        }
-    }
-
-    /** Inserta autogenerando NUMERO_LOTE por secuencia. Retorna el ID generado (>0) o -1 si falla. */
-    public int insertarLoteAuto(Lote l) {
-        validarReglas(l);
-
-        if (!existeCultivo(l.getId_cultivo())) {
-            throw new IllegalArgumentException("El id_cultivo " + l.getId_cultivo() + " no existe.");
-        }
-        if (!existeLugarProduccion(l.getId_lugar())) {
-            throw new IllegalArgumentException("El id_lugar " + l.getId_lugar() + " no existe.");
-        }
-
-        final int nuevoId = siguienteNumeroLote();
-        if (nuevoId <= 0) {
-            System.err.println("❌ No se pudo obtener NEXTVAL de la secuencia.");
             return -1;
         }
-        l.setNumero_lote(nuevoId);
-        boolean ok = insertarLote(l);
-        return ok ? nuevoId : -1;
     }
 
     /* ===================== READ ===================== */
 
     public List<Lote> listarLote() {
         List<Lote> lista = new ArrayList<>();
-        final String sql = "SELECT NUMERO_LOTE, AREA_TOTAL, AREA_SIEMBRA, ESTADO_FENOLOGICO, " +
+        final String sql =
+                "SELECT NUMERO_LOTE, AREA_TOTAL, AREA_SIEMBRA, ESTADO_FENOLOGICO, " +
                 "FECHA_SIEMBRA, FECHA_ELIMINACION, ID_CULTIVO, ID_LUGAR " +
                 "FROM LOTE ORDER BY NUMERO_LOTE";
 
@@ -158,7 +153,9 @@ public class LoteDAO {
             while (rs.next()) {
                 lista.add(mapRow(rs));
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return lista;
     }
 
@@ -180,7 +177,7 @@ public class LoteDAO {
         return l;
     }
 
-    /* ===================== UPDATE ===================== */
+    /* ===================== UPDATE (SP) ===================== */
 
     public boolean actualizarLote(Lote l) {
         validarReglas(l);
@@ -193,73 +190,75 @@ public class LoteDAO {
             throw new IllegalArgumentException("El id_lugar " + l.getId_lugar() + " no existe.");
         }
 
-        final String sql = "UPDATE LOTE SET " +
-                "AREA_TOTAL = ?, " +
-                "AREA_SIEMBRA = ?, " +
-                "ESTADO_FENOLOGICO = ?, " +
-                "FECHA_SIEMBRA = ?, " +
-                "FECHA_ELIMINACION = ?, " +
-                "ID_CULTIVO = ?, " +
-                "ID_LUGAR = ? " +
-                "WHERE NUMERO_LOTE = ?";
+        final String sql = "{ call pr_actualizar_lote(?,?,?,?,?,?,?,?) }";
 
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setDouble(1, l.getArea_total());
-            ps.setDouble(2, l.getArea_siembra());
-            ps.setString(3, l.getEstado_fenologico());
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
 
-            ps.setDate(4, toSqlDateOrNullStrict(l.getFecha_siembra()));
+            cs.setInt(1, l.getNumero_lote());
+            cs.setDouble(2, l.getArea_total());
+            cs.setDouble(3, l.getArea_siembra());
+            cs.setString(4, l.getEstado_fenologico());
+
+            cs.setDate(5, toSqlDateOrNullStrict(l.getFecha_siembra()));
             java.sql.Date fElim = toSqlDateOrNullStrict(l.getFecha_eliminacion());
-            if (fElim != null) ps.setDate(5, fElim); else ps.setNull(5, Types.DATE);
+            if (fElim != null) {
+                cs.setDate(6, fElim);
+            } else {
+                cs.setNull(6, Types.DATE);
+            }
 
-            ps.setInt(6, l.getId_cultivo());
-            ps.setInt(7, l.getId_lugar());
-            ps.setInt(8, l.getNumero_lote());
+            cs.setInt(7, l.getId_cultivo());
+            cs.setInt(8, l.getId_lugar());
 
-            return ps.executeUpdate() > 0;
+            cs.execute();
+            return true;
 
         } catch (SQLException e) {
-            System.err.println("Error al actualizar lote: " + e.getMessage());
+            System.err.println("Error al actualizar lote (pr_actualizar_lote): " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
 
-    /* ===================== DELETE ===================== */
+    /* ===================== DELETE (SP) ===================== */
 
     public boolean eliminarLote(int numeroLote) {
-        final String sql = "DELETE FROM LOTE WHERE NUMERO_LOTE = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, numeroLote);
-            return ps.executeUpdate() > 0;
+        final String sql = "{ call pr_eliminar_lote(?) }";
+
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setInt(1, numeroLote);
+            cs.execute();
+            return true;
+
         } catch (SQLIntegrityConstraintViolationException fk) {
             // Por ejemplo, si INSPECCION_FITOSANITARIA.NUMERO_LOTE referencia este LOTE
-            System.err.println("❌ No se puede eliminar el lote: está referenciado por otras tablas. " + fk.getMessage());
+            System.err.println("No se puede eliminar el lote: está referenciado por otras tablas. " + fk.getMessage());
             return false;
+
         } catch (SQLException e) {
-            System.err.println("Error al eliminar lote: " + e.getMessage());
+            System.err.println("Error al eliminar lote (pr_eliminar_lote): " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
-    
-    
+
+    /* ===================== FECHAS ===================== */
+
     private static final DateTimeFormatter FMT_YMD =
-        DateTimeFormatter.ofPattern("uuuu-MM-dd").withResolverStyle(ResolverStyle.STRICT);
+            DateTimeFormatter.ofPattern("uuuu-MM-dd")
+                             .withResolverStyle(ResolverStyle.STRICT);
 
     private java.sql.Date toSqlDateOrNullStrict(String s) {
         if (s == null) return null;
         String t = s.trim();
         if (t.isEmpty()) return null;
         try {
-            LocalDate ld = LocalDate.parse(t, FMT_YMD); // valida formato y fecha real (29/02, etc.)
+            LocalDate ld = LocalDate.parse(t, FMT_YMD); // valida formato y fecha real
             return java.sql.Date.valueOf(ld);
         } catch (DateTimeParseException ex) {
-            // Mensaje CLARO para UI
             throw new IllegalArgumentException(
                 "Formato de fecha inválido: \"" + s + "\". Usa yyyy-MM-dd (ej. 2025-11-09)."
             );
         }
     }
-
 }

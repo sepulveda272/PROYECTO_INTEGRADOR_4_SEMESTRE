@@ -67,6 +67,11 @@ public class Opciones extends javax.swing.JFrame {
         });
 
         jButton5.setText("Lote");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
 
         jButton6.setText("Predio");
         jButton6.addActionListener(new java.awt.event.ActionListener() {
@@ -76,10 +81,25 @@ public class Opciones extends javax.swing.JFrame {
         });
 
         jButton7.setText("Cultivo");
+        jButton7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton7ActionPerformed(evt);
+            }
+        });
 
         jButton8.setText("Inspeccion Fitosanitaria");
+        jButton8.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton8ActionPerformed(evt);
+            }
+        });
 
         jButton9.setText("Observaciones");
+        jButton9.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton9ActionPerformed(evt);
+            }
+        });
 
         jButton10.setText("Plaga");
         jButton10.addActionListener(new java.awt.event.ActionListener() {
@@ -214,6 +234,30 @@ public class Opciones extends javax.swing.JFrame {
         TablaPlaga tablaPlaga = new TablaPlaga();
         tablaPlaga.setVisible(true);
     }//GEN-LAST:event_jButton10ActionPerformed
+
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+        // TODO add your handling code here:
+        TablaLote tablaLote = new TablaLote();
+        tablaLote.setVisible(true);
+    }//GEN-LAST:event_jButton5ActionPerformed
+
+    private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
+        // TODO add your handling code here:
+        TablaObservaciones tablaObservaciones = new TablaObservaciones();
+        tablaObservaciones.setVisible(true);
+    }//GEN-LAST:event_jButton9ActionPerformed
+
+    private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
+        // TODO add your handling code here:
+        TablaCultivo tablaCultivo = new TablaCultivo();
+        tablaCultivo.setVisible(true);
+    }//GEN-LAST:event_jButton7ActionPerformed
+
+    private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton8ActionPerformed
+        // TODO add your handling code here:
+        TablaInspeccion tablaInspeccion = new TablaInspeccion();
+        tablaInspeccion.setVisible(true);
+    }//GEN-LAST:event_jButton8ActionPerformed
 
     /**
      * @param args the command line arguments

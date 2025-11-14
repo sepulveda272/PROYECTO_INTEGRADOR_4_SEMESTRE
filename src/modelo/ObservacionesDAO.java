@@ -11,14 +11,13 @@ import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.List;
+
 /**
  *
  * @author ADMIN
  */
-
-
-
 public class ObservacionesDAO {
+
     private final Connection conexion;
 
     public ObservacionesDAO() {
@@ -29,7 +28,7 @@ public class ObservacionesDAO {
 
     private static final DateTimeFormatter FMT_YMD =
             DateTimeFormatter.ofPattern("uuuu-MM-dd")
-                              .withResolverStyle(ResolverStyle.STRICT);
+                             .withResolverStyle(ResolverStyle.STRICT);
 
     /** Convierte String "yyyy-MM-dd" a java.sql.Date, validando fecha real */
     private java.sql.Date toSqlDateOrNullStrict(String s) {
@@ -92,55 +91,38 @@ public class ObservacionesDAO {
         }
     }
 
-    /* ===================== SECUENCIA ===================== */
+    /* ===================== CREATE (SP + TRIGGER) ===================== */
 
-    /** Obtiene el siguiente ID_OBSERVACION desde la secuencia Oracle. */
-    public int obtenerSiguienteIdObservacion() {
-        String sql = "SELECT seq_observacion.NEXTVAL FROM dual";
-        try (PreparedStatement ps = conexion.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-        } catch (SQLException e) {
-            System.err.println("Error al obtener NEXTVAL de seq_observacion: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return -1; // señal de error
-    }
-
-    /* ===================== CREATE ===================== */
-
+    /**
+     * Inserta una observación usando el procedimiento almacenado pr_insertar_observacion.
+     * El ID_OBSERVACION se genera en la BD mediante fn_generar_observacion + tr_observacion_bi.
+     */
     public boolean insertar(Observaciones o) {
         validarReglas(o);
 
-        int nuevoId = obtenerSiguienteIdObservacion();
-        if (nuevoId <= 0) {
-            throw new IllegalStateException("No se pudo obtener un nuevo ID para la observación.");
-        }
+        final String sql = "{ call pr_insertar_observacion(?,?,?,?,?) }";
 
-        String sql = "INSERT INTO OBSERVACIONES ("
-                   + "ID_OBSERVACION, FECHA_OBSERVACION, OBSERVACIONES, "
-                   + "ID_INSPECCION, ID_FUNCIONARIO"
-                   + ") VALUES (?, ?, ?, ?, ?)";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
 
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, nuevoId);
-            ps.setDate(2, toSqlDateOrNullStrict(o.getFecha_observacion())); // DATE con helper estricto
-            ps.setString(3, o.getObservaciones());
-            ps.setInt(4, o.getId_inspeccion());
-            ps.setInt(5, o.getId_funcionario());
+            cs.setDate(1, toSqlDateOrNullStrict(o.getFecha_observacion()));
+            cs.setString(2, o.getObservaciones());
+            cs.setInt(3, o.getId_inspeccion());
+            cs.setInt(4, o.getId_funcionario());
 
-            int filas = ps.executeUpdate();
-            if (filas > 0) {
-                o.setId_observacion(nuevoId); // reflejar en el objeto
-                return true;
-            }
+            // OUT: id_observacion generado
+            cs.registerOutParameter(5, Types.INTEGER);
+
+            cs.execute();
+
+            int nuevoId = cs.getInt(5);
+            o.setId_observacion(nuevoId); // reflejar en el objeto
+            return true;
+
         } catch (SQLException e) {
-            e.printStackTrace(); // aquí verás errores de PK/FK/CK
+            System.err.println("Error al insertar observación (pr_insertar_observacion): " + e.getMessage());
+            e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     /* ===================== READ ===================== */
@@ -186,14 +168,8 @@ public class ObservacionesDAO {
         return lista;
     }
 
-
     /**
      * Lista observaciones de una inspección, incluyendo el nombre del funcionario.
-     *
-     * Necesitas que la tabla FUNCIONARIO_ICA tenga columnas tipo PRIMER_NOMBRE, PRIMER_APELLIDO, etc.
-     * Además, en tu clase Observaciones deberías tener:
-     *   private String nombreFuncionario;
-     *   + getters/setters.
      */
     public List<Observaciones> listarPorInspeccion(int idInspeccion) {
         List<Observaciones> lista = new ArrayList<>();
@@ -222,11 +198,10 @@ public class ObservacionesDAO {
                     o.setId_inspeccion(rs.getInt("ID_INSPECCION"));
                     o.setId_funcionario(rs.getInt("ID_FUNCIONARIO"));
 
-                    // Armamos el nombre para mostrar (puedes ajustar aquí)
                     String nombre = rs.getString("PRIMER_NOMBRE");
                     String apellido = rs.getString("PRIMER_APELLIDO");
-                    String nombreCompleto = (nombre != null ? nombre : "") 
-                                           + " " 
+                    String nombreCompleto = (nombre != null ? nombre : "")
+                                           + " "
                                            + (apellido != null ? apellido : "");
                     o.setNombre_Funcionario(nombreCompleto.trim());
 
@@ -240,40 +215,52 @@ public class ObservacionesDAO {
         return lista;
     }
 
-    /* ===================== UPDATE ===================== */
+    /* ===================== UPDATE (SP) ===================== */
 
     public boolean actualizar(Observaciones o) {
         validarReglas(o);
 
-        String sql = "UPDATE OBSERVACIONES SET "
-                   + "FECHA_OBSERVACION = ?, "
-                   + "OBSERVACIONES = ?, "
-                   + "ID_INSPECCION = ?, "
-                   + "ID_FUNCIONARIO = ? "
-                   + "WHERE ID_OBSERVACION = ?";
+        if (!existeObservacion(o.getId_observacion())) {
+            throw new IllegalArgumentException("No existe la observación con ID " + o.getId_observacion());
+        }
 
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setDate(1, toSqlDateOrNullStrict(o.getFecha_observacion()));
-            ps.setString(2, o.getObservaciones());
-            ps.setInt(3, o.getId_inspeccion());
-            ps.setInt(4, o.getId_funcionario());
-            ps.setInt(5, o.getId_observacion());
+        final String sql = "{ call pr_actualizar_observacion(?,?,?,?,?) }";
 
-            return ps.executeUpdate() > 0;
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+
+            cs.setInt(1, o.getId_observacion());
+            cs.setDate(2, toSqlDateOrNullStrict(o.getFecha_observacion()));
+            cs.setString(3, o.getObservaciones());
+            cs.setInt(4, o.getId_inspeccion());
+            cs.setInt(5, o.getId_funcionario());
+
+            cs.execute();
+            return true;
+
         } catch (SQLException e) {
+            System.err.println("Error al actualizar observación (pr_actualizar_observacion): " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
 
-    /* ===================== DELETE ===================== */
+    /* ===================== DELETE (SP) ===================== */
 
     public boolean eliminar(int idObservacion) {
-        String sql = "DELETE FROM OBSERVACIONES WHERE ID_OBSERVACION = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, idObservacion);
-            return ps.executeUpdate() > 0;
+
+        if (!existeObservacion(idObservacion)) {
+            return false;
+        }
+
+        final String sql = "{ call pr_eliminar_observacion(?) }";
+
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setInt(1, idObservacion);
+            cs.execute();
+            return true;
+
         } catch (SQLException e) {
+            System.err.println("Error al eliminar observación (pr_eliminar_observacion): " + e.getMessage());
             e.printStackTrace();
             return false;
         }

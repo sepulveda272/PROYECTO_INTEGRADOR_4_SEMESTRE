@@ -7,16 +7,7 @@ package modelo;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import modelo.ConexionBD;
 
-/**
- *
- * @author ADMIN
- */
 public class LugarProduccionDAO {
     private final Connection conexion;
 
@@ -24,7 +15,7 @@ public class LugarProduccionDAO {
         this.conexion = ConexionBD.getInstancia().getConnection();
     }
 
-    /* ===================== Helpers ===================== */
+    /* ===================== Helpers & Validaciones ===================== */
     private boolean isBlank(String s) { return s == null || s.trim().isEmpty(); }
 
     private void validarReglas(LugarProduccion lp) {
@@ -36,30 +27,26 @@ public class LugarProduccionDAO {
         if (lp.getId_productor() <= 0)     throw new IllegalArgumentException("id_productor debe ser > 0.");
     }
 
-    /* ===================== SECUENCIA ===================== */
-
-    /** Obtiene el siguiente id_lugar desde la secuencia Oracle. */
+    /* ===================== SECUENCIA (función) ===================== */
     public int siguienteIdLugar() {
-        final String sql = "SELECT seq_lugar.NEXTVAL FROM dual";
-        try (PreparedStatement ps = conexion.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            return rs.next() ? rs.getInt(1) : -1;
+        final String sql = "{ ? = call fn_obtener_lugar_id() }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.registerOutParameter(1, Types.INTEGER);
+            cs.execute();
+            return cs.getInt(1);
         } catch (SQLException e) {
-            System.err.println("Error obteniendo NEXTVAL de seq_lugar: " + e.getMessage());
+            System.err.println("Error obteniendo ID (función): " + e.getMessage());
             e.printStackTrace();
             return -1;
         }
     }
 
-    /* ===================== EXISTS / FKs ===================== */
-
+    /* ===================== EXISTS / FKs (SQL directo) ===================== */
     public boolean existeLugar(int idLugar) {
         final String sql = "SELECT COUNT(*) FROM LUGAR_PRODUCCION WHERE ID_LUGAR = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, idLugar);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() && rs.getInt(1) > 0;
-            }
+            try (ResultSet rs = ps.executeQuery()) { return rs.next() && rs.getInt(1) > 0; }
         } catch (SQLException e) { e.printStackTrace(); return false; }
     }
 
@@ -67,99 +54,85 @@ public class LugarProduccionDAO {
         final String sql = "SELECT COUNT(*) FROM PRODUCTOR WHERE ID_PRODUCTOR = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, idProductor);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() && rs.getInt(1) > 0;
-            }
+            try (ResultSet rs = ps.executeQuery()) { return rs.next() && rs.getInt(1) > 0; }
         } catch (SQLException e) { e.printStackTrace(); return false; }
     }
 
     /* ===================== CREATE ===================== */
-
-    /** Inserta con ID provisto. */
     public boolean insertarLugar(LugarProduccion lp) {
         validarReglas(lp);
-
-        if (!existeProductor(lp.getId_productor())) {
+        if (!existeProductor(lp.getId_productor()))
             throw new IllegalArgumentException("El id_productor " + lp.getId_productor() + " no existe.");
-        }
 
-        final String sql = "INSERT INTO LUGAR_PRODUCCION (" +
-                "ID_LUGAR, DEPARTAMENTO, MUNICIPIO, VEREDA, CANTIDAD_MAXIMA, ID_PRODUCTOR) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
-
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, lp.getId_lugar());
-            ps.setString(2, lp.getDepartamento().trim());
-            ps.setString(3, lp.getMunicipio().trim());
-            ps.setString(4, lp.getVereda().trim());
-            ps.setInt(5, lp.getCantidad_maxima());
-            ps.setInt(6, lp.getId_productor());
-
-            return ps.executeUpdate() > 0;
+        final String sql = "{ call sp_insertar_lugar_id(?, ?, ?, ?, ?, ?, ?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setInt(1, lp.getId_lugar());
+            cs.setString(2, lp.getDepartamento().trim());
+            cs.setString(3, lp.getMunicipio().trim());
+            cs.setString(4, lp.getVereda().trim());
+            cs.setInt(5, lp.getCantidad_maxima());
+            cs.setInt(6, lp.getId_productor());
+            cs.registerOutParameter(7, Types.INTEGER); // p_filas
+            cs.execute();
+            return cs.getInt(7) > 0;
         } catch (SQLException e) {
-            System.err.println("Error al insertar lugar: " + e.getMessage());
+            System.err.println("Error al insertar lugar (SP): " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
 
-    /** Inserta autogenerando ID por secuencia. Retorna el ID generado (>0) o -1 si falla. */
     public int insertarLugarAuto(LugarProduccion lp) {
         validarReglas(lp);
-
-        if (!existeProductor(lp.getId_productor())) {
+        if (!existeProductor(lp.getId_productor()))
             throw new IllegalArgumentException("El id_productor " + lp.getId_productor() + " no existe.");
-        }
 
-        final int nuevoId = siguienteIdLugar();
-        if (nuevoId <= 0) {
-            System.err.println("❌ No se pudo obtener NEXTVAL de seq_lugar.");
+        final String sql = "{ call sp_insertar_lugar(?, ?, ?, ?, ?, ?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setString(1, lp.getDepartamento().trim());
+            cs.setString(2, lp.getMunicipio().trim());
+            cs.setString(3, lp.getVereda().trim());
+            cs.setInt(4, lp.getCantidad_maxima());
+            cs.setInt(5, lp.getId_productor());
+            cs.registerOutParameter(6, Types.INTEGER); // p_id_generado
+            cs.execute();
+
+            int nuevoId = cs.getInt(6);
+            lp.setId_lugar(nuevoId);
+            return nuevoId;
+        } catch (SQLException e) {
+            System.err.println("❌ No se pudo insertar lugar (SP): " + e.getMessage());
+            e.printStackTrace();
             return -1;
         }
-        lp.setId_lugar(nuevoId);
-        boolean ok = insertarLugar(lp);
-        return ok ? nuevoId : -1;
     }
 
     /* ===================== READ ===================== */
-
     public List<LugarProduccion> listarLugaresProduccion() {
         List<LugarProduccion> lista = new ArrayList<>();
-        final String sql = "SELECT ID_LUGAR, DEPARTAMENTO, MUNICIPIO, VEREDA, CANTIDAD_MAXIMA, ID_PRODUCTOR " +
-                           "FROM LUGAR_PRODUCCION ORDER BY ID_LUGAR";
-        try (PreparedStatement ps = conexion.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) lista.add(mapRow(rs));
+        final String sql = "{ call sp_listar_lugares(?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.registerOutParameter(1, Types.REF_CURSOR);
+            cs.execute();
+            try (ResultSet rs = (ResultSet) cs.getObject(1)) {
+                while (rs.next()) lista.add(mapRow(rs));
+            }
         } catch (SQLException e) { e.printStackTrace(); }
         return lista;
     }
 
-    /** Lista con el nombre completo del productor (útil para la vista/tabla). */
     public List<LugarProduccion> listarLugaresConProductor() {
         List<LugarProduccion> lista = new ArrayList<>();
-        final String sql =
-            "SELECT lp.ID_LUGAR, lp.DEPARTAMENTO, lp.MUNICIPIO, lp.VEREDA, lp.CANTIDAD_MAXIMA, lp.ID_PRODUCTOR, " +
-            "       REGEXP_REPLACE(TRIM( NVL(p.PRIMER_NOMBRE,'') || ' ' || NVL(p.SEGUNDO_NOMBRE,'') || ' ' || " +
-            "                               NVL(p.PRIMER_APELLIDO,'') || ' ' || NVL(p.SEGUNDO_APELLIDO,'') ), ' +',' ') AS PRODUCTOR_NOMBRE " +
-            "FROM LUGAR_PRODUCCION lp " +
-            "JOIN PRODUCTOR p ON p.ID_PRODUCTOR = lp.ID_PRODUCTOR " +
-            "ORDER BY lp.ID_LUGAR";
-
-        try (PreparedStatement ps = conexion.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                LugarProduccion lp = new LugarProduccion();
-                lp.setId_lugar(rs.getInt("ID_LUGAR"));
-                lp.setDepartamento(rs.getString("DEPARTAMENTO"));
-                lp.setMunicipio(rs.getString("MUNICIPIO"));
-                lp.setVereda(rs.getString("VEREDA"));
-                lp.setCantidad_maxima(rs.getInt("CANTIDAD_MAXIMA"));
-                lp.setId_productor(rs.getInt("ID_PRODUCTOR"));
-                // Campo opcional para la vista:
-                try {
-                    lp.setProductor_nombre(rs.getString("PRODUCTOR_NOMBRE"));
-                } catch (Exception ignore) {}
-                lista.add(lp);
+        final String sql = "{ call sp_listar_lugares_prod(?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.registerOutParameter(1, Types.REF_CURSOR);
+            cs.execute();
+            try (ResultSet rs = (ResultSet) cs.getObject(1)) {
+                while (rs.next()) {
+                    LugarProduccion lp = mapRow(rs);
+                    try { lp.setProductor_nombre(rs.getString("PRODUCTOR_NOMBRE")); } catch (Exception ignore) {}
+                    lista.add(lp);
+                }
             }
         } catch (SQLException e) { e.printStackTrace(); }
         return lista;
@@ -177,56 +150,44 @@ public class LugarProduccionDAO {
     }
 
     /* ===================== UPDATE ===================== */
-
     public boolean actualizarLugar(LugarProduccion lp) {
         validarReglas(lp);
-        if (!existeLugar(lp.getId_lugar())) {
+        if (!existeLugar(lp.getId_lugar()))
             throw new IllegalArgumentException("No existe el lugar con ID " + lp.getId_lugar());
-        }
-        if (!existeProductor(lp.getId_productor())) {
+        if (!existeProductor(lp.getId_productor()))
             throw new IllegalArgumentException("El id_productor " + lp.getId_productor() + " no existe.");
-        }
 
-        final String sql = "UPDATE LUGAR_PRODUCCION SET " +
-                "DEPARTAMENTO = ?, " +
-                "MUNICIPIO = ?, " +
-                "VEREDA = ?, " +
-                "CANTIDAD_MAXIMA = ?, " +
-                "ID_PRODUCTOR = ? " +
-                "WHERE ID_LUGAR = ?";
-
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setString(1, lp.getDepartamento().trim());
-            ps.setString(2, lp.getMunicipio().trim());
-            ps.setString(3, lp.getVereda().trim());
-            ps.setInt(4, lp.getCantidad_maxima());
-            ps.setInt(5, lp.getId_productor());
-            ps.setInt(6, lp.getId_lugar());
-            return ps.executeUpdate() > 0;
-
+        final String sql = "{ call sp_actualizar_lugar(?, ?, ?, ?, ?, ?, ?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setInt(1, lp.getId_lugar());
+            cs.setString(2, lp.getDepartamento().trim());
+            cs.setString(3, lp.getMunicipio().trim());
+            cs.setString(4, lp.getVereda().trim());
+            cs.setInt(5, lp.getCantidad_maxima());
+            cs.setInt(6, lp.getId_productor());
+            cs.registerOutParameter(7, Types.INTEGER); // p_filas
+            cs.execute();
+            return cs.getInt(7) > 0;
         } catch (SQLException e) {
-            System.err.println("Error al actualizar lugar: " + e.getMessage());
+            System.err.println("Error al actualizar lugar (SP): " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
 
     /* ===================== DELETE ===================== */
-
-    /** Elimina físicamente. Falla si hay FKs (p.ej., LOTE.ID_LUGAR). */
     public boolean eliminarLugar(int idLugar) {
-        final String sql = "DELETE FROM LUGAR_PRODUCCION WHERE ID_LUGAR = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, idLugar);
-            return ps.executeUpdate() > 0;
-
-        } catch (SQLIntegrityConstraintViolationException fk) {
-            System.err.println("❌ No se puede eliminar el lugar: está referenciado por otras tablas. " + fk.getMessage());
-            return false;
+        final String sql = "{ call sp_eliminar_lugar(?, ?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setInt(1, idLugar);
+            cs.registerOutParameter(2, Types.INTEGER); // p_filas (0 si hay referencias)
+            cs.execute();
+            return cs.getInt(2) > 0;
         } catch (SQLException e) {
-            System.err.println("Error al eliminar lugar: " + e.getMessage());
+            System.err.println("Error al eliminar lugar (SP): " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
 }
+

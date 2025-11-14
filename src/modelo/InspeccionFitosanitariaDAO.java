@@ -17,6 +17,7 @@ import java.time.format.DateTimeParseException;
  * @author ADMIN
  */
 public class InspeccionFitosanitariaDAO {
+
     private final Connection conexion;
 
     public InspeccionFitosanitariaDAO() {
@@ -45,21 +46,8 @@ public class InspeccionFitosanitariaDAO {
             throw new IllegalArgumentException("id_tecnico debe ser un ID válido (>0).");
     }
 
-    private boolean isBlank(String s) { return s == null || s.trim().isEmpty(); }
-
-    /* ===================== SECUENCIA ===================== */
-
-    /** Obtiene el siguiente id_inspeccion desde la secuencia Oracle. */
-    public int siguienteIdInspeccion() {
-        final String sql = "SELECT seq_inspeccion.NEXTVAL FROM dual";
-        try (PreparedStatement ps = conexion.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getInt(1);
-        } catch (SQLException e) {
-            System.err.println("Error obteniendo NEXTVAL de seq_inspeccion: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return -1; // señal de error
+    private boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
     }
 
     /* ===================== EXISTS / FKs ===================== */
@@ -68,8 +56,12 @@ public class InspeccionFitosanitariaDAO {
         final String sql = "SELECT COUNT(*) FROM INSPECCION_FITOSANITARIA WHERE ID_INSPECCION = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, idInspeccion);
-            try (ResultSet rs = ps.executeQuery()) { if (rs.next()) return rs.getInt(1) > 0; }
-        } catch (SQLException e) { e.printStackTrace(); }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
@@ -77,8 +69,12 @@ public class InspeccionFitosanitariaDAO {
         final String sql = "SELECT COUNT(*) FROM LOTE WHERE NUMERO_LOTE = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, numeroLote);
-            try (ResultSet rs = ps.executeQuery()) { if (rs.next()) return rs.getInt(1) > 0; }
-        } catch (SQLException e) { e.printStackTrace(); }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
@@ -86,46 +82,22 @@ public class InspeccionFitosanitariaDAO {
         final String sql = "SELECT COUNT(*) FROM TECNICO_OFICIAL WHERE NUMERO_REGISTRO = ?";
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, idTecnico);
-            try (ResultSet rs = ps.executeQuery()) { if (rs.next()) return rs.getInt(1) > 0; }
-        } catch (SQLException e) { e.printStackTrace(); }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
-    /* ===================== CREATE ===================== */
+    /* ===================== CREATE (SP + TRIGGER) ===================== */
 
-    /** Inserta con ID provisto (no autogenerado). */
-    public boolean insertarInspeccion(InspeccionFitosanitaria i) {
-        validarReglas(i);
-
-        if (!existeLote(i.getNumero_lote()))
-            throw new IllegalArgumentException("El numero_lote " + i.getNumero_lote() + " no existe.");
-        if (!existeTecnico(i.getId_tecnico()))
-            throw new IllegalArgumentException("El id_tecnico " + i.getId_tecnico() + " no existe.");
-
-        final double incidencia = calcularIncidencia(i.getPlantas_revisadas(), i.getPlantas_afectadas());
-        final String nivel = calcularNivelPorIncidencia(incidencia);
-
-        final String sql = "INSERT INTO INSPECCION_FITOSANITARIA (" +
-                "ID_INSPECCION, PLANTAS_REVISADAS, PLANTAS_AFECTADAS, FECHA_INSPECCION, " +
-                "NIVEL_ALERTA, NUMERO_LOTE, ID_TECNICO) VALUES (?, ?, ?, ?, ?, ?, ?)";
-
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, i.getId_inspeccion());
-            ps.setInt(2, i.getPlantas_revisadas());
-            ps.setInt(3, i.getPlantas_afectadas());
-            ps.setDate(4, toSqlDateOrNullStrict(i.getFecha_inspeccion()));
-            ps.setString(5, nivel); // <- calculado
-            ps.setInt(6, i.getNumero_lote());
-            ps.setInt(7, i.getId_tecnico());
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            System.err.println("Error al insertar inspección: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    /** Inserta autogenerando ID por secuencia. Retorna el ID generado (>0) o -1 si falla. */
+    /**
+     * Inserta una inspección usando el procedimiento almacenado pr_insertar_inspeccion.
+     * El ID_INSPECCION se genera en la BD mediante fn_generar_inspeccion + tr_inspeccion_bi.
+     * Retorna el ID generado (>0) o -1 si falla.
+     */
     public int insertarInspeccionAuto(InspeccionFitosanitaria i) {
         validarReglas(i);
 
@@ -134,19 +106,37 @@ public class InspeccionFitosanitariaDAO {
         if (!existeTecnico(i.getId_tecnico()))
             throw new IllegalArgumentException("El id_tecnico " + i.getId_tecnico() + " no existe.");
 
-        final int nuevoId = siguienteIdInspeccion();
-        if (nuevoId <= 0) {
-            System.err.println("❌ No se pudo obtener NEXTVAL de la secuencia.");
+        final String sql = "{ call pr_insertar_inspeccion(?,?,?,?,?,?) }";
+
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+
+            cs.setInt(1, i.getPlantas_revisadas());
+            cs.setInt(2, i.getPlantas_afectadas());
+            cs.setDate(3, toSqlDateOrNullStrict(i.getFecha_inspeccion()));
+            cs.setInt(4, i.getNumero_lote());
+            cs.setInt(5, i.getId_tecnico());
+
+            cs.registerOutParameter(6, Types.INTEGER);
+
+            cs.execute();
+
+            int nuevoId = cs.getInt(6);
+            i.setId_inspeccion(nuevoId);
+            return nuevoId;
+
+        } catch (SQLException e) {
+            System.err.println("Error al insertar inspección (pr_insertar_inspeccion): " + e.getMessage());
+            e.printStackTrace();
             return -1;
         }
-        i.setId_inspeccion(nuevoId);
-        boolean ok = insertarInspeccion(i);
-        return ok ? nuevoId : -1;
     }
 
     /* ===================== READ ===================== */
 
-    /** Lista inspecciones con nombre del técnico y la incidencia calculada. */
+    /**
+     * Lista inspecciones con nombre del técnico.
+     * La incidencia puede calcularse en la UI usando los helpers si lo necesitas.
+     */
     public List<InspeccionFitosanitaria> listarInspeccionesConTecnicoEIncidencia() {
         List<InspeccionFitosanitaria> lista = new ArrayList<>();
         final String sql =
@@ -160,6 +150,7 @@ public class InspeccionFitosanitariaDAO {
 
         try (PreparedStatement ps = conexion.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
                 InspeccionFitosanitaria i = new InspeccionFitosanitaria();
                 i.setId_inspeccion(rs.getInt("ID_INSPECCION"));
@@ -171,12 +162,6 @@ public class InspeccionFitosanitariaDAO {
                 i.setNumero_lote(rs.getInt("NUMERO_LOTE"));
                 i.setId_tecnico(rs.getInt("ID_TECNICO"));
                 i.setNombre_tecnico(rs.getString("NOMBRE_TECNICO"));
-
-                // si quieres mostrar incidencia en la UI aunque tu POJO no tenga campo,
-                // puedes calcularla “on the fly” y adjuntarla como tooltip o columna aparte.
-                double inc = calcularIncidencia(i.getPlantas_revisadas(), i.getPlantas_afectadas());
-                // ej: guarda en el nombre del técnico “(12.5%)” si no quieres tocar el POJO
-                // i.setNombre_tecnico(i.getNombre_tecnico() + " (" + String.format(Locale.US,"%.1f%%", inc) + ")");
 
                 lista.add(i);
             }
@@ -199,7 +184,7 @@ public class InspeccionFitosanitariaDAO {
         return i;
     }
 
-    /* ===================== UPDATE ===================== */
+    /* ===================== UPDATE (SP) ===================== */
 
     public boolean actualizarInspeccion(InspeccionFitosanitaria i) {
         validarReglas(i);
@@ -211,61 +196,63 @@ public class InspeccionFitosanitariaDAO {
         if (!existeTecnico(i.getId_tecnico()))
             throw new IllegalArgumentException("El id_tecnico " + i.getId_tecnico() + " no existe.");
 
-        final double incidencia = calcularIncidencia(i.getPlantas_revisadas(), i.getPlantas_afectadas());
-        final String nivel = calcularNivelPorIncidencia(incidencia);
+        final String sql = "{ call pr_actualizar_inspeccion(?,?,?,?,?,?) }";
 
-        final String sql = "UPDATE INSPECCION_FITOSANITARIA SET " +
-                "PLANTAS_REVISADAS = ?, PLANTAS_AFECTADAS = ?, FECHA_INSPECCION = ?, " +
-                "NIVEL_ALERTA = ?, NUMERO_LOTE = ?, ID_TECNICO = ? " +
-                "WHERE ID_INSPECCION = ?";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
 
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, i.getPlantas_revisadas());
-            ps.setInt(2, i.getPlantas_afectadas());
-            ps.setDate(3, toSqlDateOrNullStrict(i.getFecha_inspeccion()));
-            ps.setString(4, nivel); // <- recalculado
-            ps.setInt(5, i.getNumero_lote());
-            ps.setInt(6, i.getId_tecnico());
-            ps.setInt(7, i.getId_inspeccion());
-            return ps.executeUpdate() > 0;
+            cs.setInt(1, i.getId_inspeccion());
+            cs.setInt(2, i.getPlantas_revisadas());
+            cs.setInt(3, i.getPlantas_afectadas());
+            cs.setDate(4, toSqlDateOrNullStrict(i.getFecha_inspeccion()));
+            cs.setInt(5, i.getNumero_lote());
+            cs.setInt(6, i.getId_tecnico());
+
+            cs.execute();
+            return true;
+
         } catch (SQLException e) {
-            System.err.println("Error al actualizar inspección: " + e.getMessage());
+            System.err.println("Error al actualizar inspección (pr_actualizar_inspeccion): " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
 
-    /* ===================== DELETE ===================== */
+    /* ===================== DELETE (SP) ===================== */
 
+    /**
+     * Elimina una inspección.
+     * Retorna null si todo fue bien, o un mensaje de error si no se pudo.
+     */
     public String eliminarInspeccion(int idInspeccion) {
-        final String sql = "DELETE FROM INSPECCION_FITOSANITARIA WHERE ID_INSPECCION = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, idInspeccion);
-            int filas = ps.executeUpdate();
 
-            if (filas == 0) {
-                return "No existe una inspección con ese ID.";
-            }
+        if (!existeInspeccion(idInspeccion)) {
+            return "No existe una inspección con ese ID.";
+        }
 
-            // null significa: todo OK.
+        final String sql = "{ call pr_eliminar_inspeccion(?) }";
+
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setInt(1, idInspeccion);
+            cs.execute();
             return null;
+
         } catch (SQLException e) {
             // ORA-02292: integrity constraint violated - child record found
             if (e.getErrorCode() == 2292) {
                 return "No se puede eliminar la inspección porque tiene observaciones asociadas.";
             }
 
-            System.err.println("Error al eliminar inspección: " + e.getMessage());
+            System.err.println("Error al eliminar inspección (pr_eliminar_inspeccion): " + e.getMessage());
             e.printStackTrace();
             return "Error al eliminar inspección: " + e.getMessage();
         }
     }
 
-
     /* ===================== FECHAS (estricto yyyy-MM-dd) ===================== */
 
     private static final DateTimeFormatter FMT_YMD =
-        DateTimeFormatter.ofPattern("uuuu-MM-dd").withResolverStyle(ResolverStyle.STRICT);
+        DateTimeFormatter.ofPattern("uuuu-MM-dd")
+                         .withResolverStyle(ResolverStyle.STRICT);
 
     private java.sql.Date toSqlDateOrNullStrict(String s) {
         if (s == null) return null;
@@ -275,22 +262,22 @@ public class InspeccionFitosanitariaDAO {
             LocalDate ld = LocalDate.parse(t, FMT_YMD); // valida formato y fecha real
             return java.sql.Date.valueOf(ld);
         } catch (DateTimeParseException ex) {
-            // Mensaje CLARO para UI
             throw new IllegalArgumentException(
                 "Formato de fecha inválido: \"" + s + "\". Usa yyyy-MM-dd (ej. 2025-11-09)."
             );
         }
     }
-    
-    // --- Helpers incidencia/nivel ---
-    private double calcularIncidencia(int revisadas, int afectadas) {
-        if (revisadas <= 0) return 0.0;            // evita división por cero; operativamente 0%
+
+    /* ===================== HELPERS INCIDENCIA / NIVEL (para la UI) ===================== */
+
+    public double calcularIncidencia(int revisadas, int afectadas) {
+        if (revisadas <= 0) return 0.0;            // evita división por cero
         if (afectadas < 0) afectadas = 0;
         if (afectadas > revisadas) afectadas = revisadas;
         return (afectadas * 100.0) / revisadas;    // porcentaje
     }
 
-    private String calcularNivelPorIncidencia(double inc) {
+    public String calcularNivelPorIncidencia(double inc) {
         if (inc == 0.0)                  return "Sin incidencia";
         else if (inc > 0 && inc <= 5)    return "Muy baja";
         else if (inc > 5 && inc <= 10)   return "Baja";
@@ -299,5 +286,4 @@ public class InspeccionFitosanitariaDAO {
         else if (inc > 40 && inc <= 60)  return "Muy alta";
         else                             return "Critica"; // >60
     }
-
 }

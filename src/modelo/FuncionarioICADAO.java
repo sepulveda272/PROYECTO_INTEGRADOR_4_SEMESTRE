@@ -9,100 +9,78 @@ import java.util.ArrayList;
 import java.util.List;
 import org.mindrot.jbcrypt.BCrypt;
 import modelo.ConexionBD;
-/**
- *
- * @author ADMIN
- */
+
 public class FuncionarioICADAO {
     private Connection conexion;
 
     public FuncionarioICADAO() {
         this.conexion = ConexionBD.getInstancia().getConnection();
     }
-    /* ===================== SECUENCIA ===================== */
 
-    /** Obtiene el siguiente id_funcionario desde la secuencia Oracle. */
+    /* ===================== SECUENCIA (opcional helper) ===================== */
     public int siguienteIdFuncionario() {
-        String sql = "SELECT seq_funcionario.NEXTVAL FROM dual";
-        try (PreparedStatement ps = conexion.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getInt(1);
+        final String sql = "{ ? = call fn_next_funcionario_id() }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.registerOutParameter(1, Types.INTEGER);
+            cs.execute();
+            return cs.getInt(1);
         } catch (SQLException e) {
-            System.err.println("Error obteniendo NEXTVAL de seq_funcionario: " + e.getMessage());
+            System.err.println("Error obteniendo ID (función): " + e.getMessage());
             e.printStackTrace();
+            return -1;
         }
-        return -1;
     }
 
     /* ===================== AUTH / LOGIN (BCrypt) ===================== */
-
     public Integer validarFuncionario(String correo, String passwordPlano) {
-        String sql = "SELECT ID_FUNCIONARIO, PASSWORD "
-                   + "FROM FUNCIONARIO_ICA "
-                   + "WHERE CORREO = ? AND ESTADO = 'ACTIVO'";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setString(1, correo);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    int id = rs.getInt("ID_FUNCIONARIO");
-                    String hash = rs.getString("PASSWORD");
-                    if (hash != null && BCrypt.checkpw(passwordPlano, hash)) {
-                        return id;
-                    }
-                }
+        final String sql = "{ call sp_get_login_funcionario(?, ?, ?, ?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setString(1, correo);
+            cs.registerOutParameter(2, Types.INTEGER); // id
+            cs.registerOutParameter(3, Types.VARCHAR); // hash
+            cs.registerOutParameter(4, Types.VARCHAR); // estado
+            cs.execute();
+
+            Integer id = (Integer) cs.getObject(2);
+            String hash = cs.getString(3);
+            String estado = cs.getString(4);
+
+            if (id != null && hash != null && "ACTIVO".equalsIgnoreCase(estado)
+                    && BCrypt.checkpw(passwordPlano, hash)) {
+                return id;
             }
+            return null;
         } catch (SQLException e) {
-            System.err.println("Error al validar funcionario: " + e.getMessage());
+            System.err.println("Error en login (SP): " + e.getMessage());
             e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
     /* ===================== CREATE ===================== */
-
     public boolean insertarFuncionario(FuncionarioICA f) {
-        String sql = "INSERT INTO FUNCIONARIO_ICA ("
-                   + "ID_FUNCIONARIO, NUMERO_IDENTIFICACION, TIPO_IDENTIFICACION, "
-                   + "PRIMER_NOMBRE, SEGUNDO_NOMBRE, PRIMER_APELLIDO, SEGUNDO_APELLIDO, "
-                   + "CELULAR, CORREO, PASSWORD, ESTADO) "
-                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, f.getId_funcionario());
-            ps.setLong(2, f.getNumero_identificacion());
-            ps.setString(3, f.getTipo_identificacion());
-            ps.setString(4, f.getPrimer_nombre());
-
-            // Segundo nombre opcional
-            if (isBlank(f.getSegundo_nombre())) {
-                ps.setNull(5, Types.VARCHAR);
-            } else {
-                ps.setString(5, f.getSegundo_nombre());
-            }
-
-            ps.setString(6, f.getPrimer_apellido());
-
-            // Segundo apellido opcional
-            if (isBlank(f.getSegundo_apellido())) {
-                ps.setNull(7, Types.VARCHAR);
-            } else {
-                ps.setString(7, f.getSegundo_apellido());
-            }
-
-            ps.setLong(8, f.getCelular());
-            ps.setString(9, f.getCorreo());
-            // Guardar HASH de la contraseña
-            ps.setString(10, BCrypt.hashpw(f.getPassword(), BCrypt.gensalt(12)));
-            ps.setString(11, f.getEstado() != null ? f.getEstado() : "ACTIVO");
-
-            return ps.executeUpdate() > 0;
-
+        final String sql = "{ call sp_insertar_funcionario_con_id(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setInt(1,  f.getId_funcionario());
+            cs.setLong(2, f.getNumero_identificacion());
+            cs.setString(3, f.getTipo_identificacion());
+            cs.setString(4, f.getPrimer_nombre());
+            if (isBlank(f.getSegundo_nombre())) cs.setNull(5, Types.VARCHAR); else cs.setString(5, f.getSegundo_nombre());
+            cs.setString(6, f.getPrimer_apellido());
+            if (isBlank(f.getSegundo_apellido())) cs.setNull(7, Types.VARCHAR); else cs.setString(7, f.getSegundo_apellido());
+            cs.setLong(8,  f.getCelular());
+            cs.setString(9,  f.getCorreo());
+            cs.setString(10, BCrypt.hashpw(f.getPassword(), BCrypt.gensalt(12)));
+            cs.setString(11, isBlank(f.getEstado()) ? "ACTIVO" : f.getEstado());
+            cs.registerOutParameter(12, Types.INTEGER); // p_filas
+            cs.execute();
+            return cs.getInt(12) > 0;
         } catch (SQLException e) {
-            if (e.getMessage() != null &&
-                e.getMessage().toUpperCase().contains("UQ_FUN_IDENT")) {
-                System.err.println("❌ Ya existe un funcionario con ese numero_identificacion.");
+            String msg = (e.getMessage()==null?"":e.getMessage().toUpperCase());
+            if (msg.contains("UQ_FUN_IDENT") || msg.contains("ORA-00001")) {
+                System.err.println("❌ Ya existe un funcionario con ese numero_identificacion/correo.");
             } else {
-                System.err.println("Error al insertar funcionario: " + e.getMessage());
+                System.err.println("Error al insertar funcionario (SP): " + e.getMessage());
             }
             e.printStackTrace();
             return false;
@@ -110,32 +88,43 @@ public class FuncionarioICADAO {
     }
 
     public int insertarFuncionarioAuto(FuncionarioICA f) {
-        int nuevoId = siguienteIdFuncionario();
-        if (nuevoId <= 0) {
-            System.err.println("❌ No se pudo obtener NEXTVAL de seq_funcionario.");
+        final String sql = "{ call sp_insertar_funcionario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setLong(1, f.getNumero_identificacion());
+            cs.setString(2, f.getTipo_identificacion());
+            cs.setString(3, f.getPrimer_nombre());
+            if (isBlank(f.getSegundo_nombre())) cs.setNull(4, Types.VARCHAR); else cs.setString(4, f.getSegundo_nombre());
+            cs.setString(5, f.getPrimer_apellido());
+            if (isBlank(f.getSegundo_apellido())) cs.setNull(6, Types.VARCHAR); else cs.setString(6, f.getSegundo_apellido());
+            cs.setLong(7, f.getCelular());
+            cs.setString(8, f.getCorreo());
+            cs.setString(9, BCrypt.hashpw(f.getPassword(), BCrypt.gensalt(12)));
+            cs.setString(10, isBlank(f.getEstado()) ? "ACTIVO" : f.getEstado());
+            cs.registerOutParameter(11, Types.INTEGER); // p_id_generado
+            cs.execute();
+
+            int id = cs.getInt(11);
+            f.setId_funcionario(id);
+            return id;
+        } catch (SQLException e) {
+            System.err.println("Error al insertar funcionario (SP auto): " + e.getMessage());
+            e.printStackTrace();
             return -1;
         }
-        f.setId_funcionario(nuevoId);
-        boolean ok = insertarFuncionario(f);
-        return ok ? nuevoId : -1;
     }
 
     /* ===================== READ ===================== */
-
     public List<FuncionarioICA> listarFuncionariosActivos() {
         List<FuncionarioICA> lista = new ArrayList<>();
-        String sql = "SELECT ID_FUNCIONARIO, NUMERO_IDENTIFICACION, TIPO_IDENTIFICACION, "
-                   + "PRIMER_NOMBRE, SEGUNDO_NOMBRE, PRIMER_APELLIDO, SEGUNDO_APELLIDO, "
-                   + "CELULAR, CORREO, ESTADO "
-                   + "FROM FUNCIONARIO_ICA "
-                   + "WHERE ESTADO = 'ACTIVO' "
-                   + "ORDER BY ID_FUNCIONARIO";
-        try (PreparedStatement ps = conexion.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                lista.add(mapRowSinPassword(rs));
+        final String sql = "{ call sp_listar_funcionarios_activos(?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.registerOutParameter(1, Types.REF_CURSOR);
+            cs.execute();
+            try (ResultSet rs = (ResultSet) cs.getObject(1)) {
+                while (rs.next()) lista.add(mapRowSinPassword(rs));
             }
         } catch (SQLException e) {
+            System.err.println("Error listando funcionarios activos (SP): " + e.getMessage());
             e.printStackTrace();
         }
         return lista;
@@ -143,17 +132,15 @@ public class FuncionarioICADAO {
 
     public List<FuncionarioICA> listarFuncionarios() {
         List<FuncionarioICA> lista = new ArrayList<>();
-        String sql = "SELECT ID_FUNCIONARIO, NUMERO_IDENTIFICACION, TIPO_IDENTIFICACION, "
-                   + "PRIMER_NOMBRE, SEGUNDO_NOMBRE, PRIMER_APELLIDO, SEGUNDO_APELLIDO, "
-                   + "CELULAR, CORREO, ESTADO "
-                   + "FROM FUNCIONARIO_ICA "
-                   + "ORDER BY ID_FUNCIONARIO";
-        try (PreparedStatement ps = conexion.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                lista.add(mapRowSinPassword(rs));
+        final String sql = "{ call sp_listar_funcionarios(?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.registerOutParameter(1, Types.REF_CURSOR);
+            cs.execute();
+            try (ResultSet rs = (ResultSet) cs.getObject(1)) {
+                while (rs.next()) lista.add(mapRowSinPassword(rs));
             }
         } catch (SQLException e) {
+            System.err.println("Error listando funcionarios (SP): " + e.getMessage());
             e.printStackTrace();
         }
         return lista;
@@ -175,52 +162,28 @@ public class FuncionarioICADAO {
     }
 
     /* ===================== UPDATE ===================== */
-
     public boolean actualizarFuncionario(FuncionarioICA f) {
-        String sql = "UPDATE FUNCIONARIO_ICA SET "
-                   + "NUMERO_IDENTIFICACION = ?, "
-                   + "TIPO_IDENTIFICACION = ?, "
-                   + "PRIMER_NOMBRE = ?, "
-                   + "SEGUNDO_NOMBRE = ?, "
-                   + "PRIMER_APELLIDO = ?, "
-                   + "SEGUNDO_APELLIDO = ?, "
-                   + "CELULAR = ?, "
-                   + "CORREO = ?, "
-                   + "ESTADO = ? "
-                   + "WHERE ID_FUNCIONARIO = ?";
-
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setLong(1, f.getNumero_identificacion());
-            ps.setString(2, f.getTipo_identificacion());
-            ps.setString(3, f.getPrimer_nombre());
-
-            if (isBlank(f.getSegundo_nombre())) {
-                ps.setNull(4, Types.VARCHAR);
-            } else {
-                ps.setString(4, f.getSegundo_nombre());
-            }
-
-            ps.setString(5, f.getPrimer_apellido());
-
-            if (isBlank(f.getSegundo_apellido())) {
-                ps.setNull(6, Types.VARCHAR);
-            } else {
-                ps.setString(6, f.getSegundo_apellido());
-            }
-
-            ps.setLong(7, f.getCelular());
-            ps.setString(8, f.getCorreo());
-            ps.setString(9, f.getEstado());
-            ps.setInt(10, f.getId_funcionario());
-
-            return ps.executeUpdate() > 0;
-
+        final String sql = "{ call sp_actualizar_funcionario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setInt(1,  f.getId_funcionario());
+            cs.setLong(2, f.getNumero_identificacion());
+            cs.setString(3, f.getTipo_identificacion());
+            cs.setString(4, f.getPrimer_nombre());
+            if (isBlank(f.getSegundo_nombre())) cs.setNull(5, Types.VARCHAR); else cs.setString(5, f.getSegundo_nombre());
+            cs.setString(6, f.getPrimer_apellido());
+            if (isBlank(f.getSegundo_apellido())) cs.setNull(7, Types.VARCHAR); else cs.setString(7, f.getSegundo_apellido());
+            cs.setLong(8, f.getCelular());
+            cs.setString(9, f.getCorreo());
+            cs.setString(10, f.getEstado());
+            cs.registerOutParameter(11, Types.INTEGER); // p_filas
+            cs.execute();
+            return cs.getInt(11) > 0;
         } catch (SQLException e) {
-            if (e.getMessage() != null &&
-                e.getMessage().toUpperCase().contains("UQ_FUN_IDENT")) {
-                System.err.println("❌ Ya existe un funcionario con ese numero_identificacion.");
+            String msg = (e.getMessage()==null?"":e.getMessage().toUpperCase());
+            if (msg.contains("UQ_FUN_IDENT") || msg.contains("ORA-00001")) {
+                System.err.println("❌ Ya existe un funcionario con ese numero_identificacion/correo.");
             } else {
-                System.err.println("Error al actualizar funcionario: " + e.getMessage());
+                System.err.println("Error al actualizar funcionario (SP): " + e.getMessage());
             }
             e.printStackTrace();
             return false;
@@ -232,97 +195,73 @@ public class FuncionarioICADAO {
             System.err.println("❌ password no puede ser vacío.");
             return false;
         }
-        String sql = "UPDATE FUNCIONARIO_ICA SET PASSWORD = ? WHERE ID_FUNCIONARIO = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            String hash = BCrypt.hashpw(nuevoPasswordPlano, BCrypt.gensalt(12));
-            ps.setString(1, hash);
-            ps.setInt(2, idFuncionario);
-            return ps.executeUpdate() > 0;
+        final String sql = "{ call sp_actualizar_password_func(?, ?, ?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setInt(1, idFuncionario);
+            cs.setString(2, BCrypt.hashpw(nuevoPasswordPlano, BCrypt.gensalt(12)));
+            cs.registerOutParameter(3, Types.INTEGER);
+            cs.execute();
+            return cs.getInt(3) > 0;
         } catch (SQLException e) {
+            System.err.println("Error al actualizar password (SP): " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
 
-     /* ===================== DELETE (Lógico, con validación FK) ===================== */
-
-    /** Cuenta observaciones que referencian al funcionario. */
-    private int contarObservacionePorFuncionario(int idFuncionario) {
-        final String sql = "SELECT COUNT(*) "
-                         + "FROM OBSERVACIONES "
-                         + "WHERE ID_FUNCIONARIO = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, idFuncionario);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() ? rs.getInt(1) : 0;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return -1;
-        }
-    }
-
-    /** Inactiva SOLO si no está referenciado por observaciones/inspecciones. */
+    /* ===================== DELETE (lógico con verificación FK) ===================== */
     public boolean desactivarFuncionarioSiNoReferenciado(int idFuncionario) {
         if (!existeFuncionario(idFuncionario)) {
             System.err.println("⚠️ No existe el funcionario con id " + idFuncionario + ".");
             return false;
         }
-
-        int refs = contarObservacionePorFuncionario(idFuncionario);
-        if (refs < 0) {
-            System.err.println("Error verificando referencias de observaciones.");
+        final String sql = "{ call sp_inactivar_funcionario(?, ?, ?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setInt(1, idFuncionario);
+            cs.registerOutParameter(2, Types.INTEGER); // p_code
+            cs.registerOutParameter(3, Types.VARCHAR); // p_msg
+            cs.execute();
+            int code = cs.getInt(2);
+            String msg = cs.getString(3);
+            if (code == 0) return true;
+            System.err.println("❌ " + msg);
             return false;
-        }
-        if (refs > 0) {
-            System.err.println("❌ No se puede inactivar: el funcionario está referenciado por "
-                               + refs + " observación(es).");
-            return false;
-        }
-
-        final String sql = "UPDATE FUNCIONARIO_ICA SET ESTADO = 'INACTIVO' WHERE ID_FUNCIONARIO = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, idFuncionario);
-            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.err.println("Error al desactivar funcionario: " + e.getMessage());
+            System.err.println("Error al inactivar funcionario (SP): " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
 
     /* ===================== EXISTS ===================== */
-
     public boolean existeFuncionarioActivo(int idFuncionario) {
-        String sql = "SELECT COUNT(*) FROM FUNCIONARIO_ICA "
-                   + "WHERE ID_FUNCIONARIO = ? AND ESTADO = 'ACTIVO'";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, idFuncionario);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1) > 0;
-            }
+        final String sql = "{ call sp_existe_funcionario_activo(?, ?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setInt(1, idFuncionario);
+            cs.registerOutParameter(2, Types.INTEGER);
+            cs.execute();
+            return cs.getInt(2) > 0;
         } catch (SQLException e) {
+            System.err.println("Error en existeFuncionarioActivo (SP): " + e.getMessage());
             e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     public boolean existeFuncionario(int idFuncionario) {
-        String sql = "SELECT COUNT(*) FROM FUNCIONARIO_ICA WHERE ID_FUNCIONARIO = ?";
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, idFuncionario);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1) > 0;
-            }
+        final String sql = "{ call sp_existe_funcionario(?, ?) }";
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setInt(1, idFuncionario);
+            cs.registerOutParameter(2, Types.INTEGER);
+            cs.execute();
+            return cs.getInt(2) > 0;
         } catch (SQLException e) {
+            System.err.println("Error en existeFuncionario (SP): " + e.getMessage());
             e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     /* ===================== Helpers ===================== */
-
-    private boolean isBlank(String s) {
-        return s == null || s.trim().isEmpty();
-    }
+    private boolean isBlank(String s) { return s == null || s.trim().isEmpty(); }
 }

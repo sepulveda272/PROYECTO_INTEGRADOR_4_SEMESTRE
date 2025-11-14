@@ -4,44 +4,45 @@
  */
 package modelo;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.CallableStatement;
 import java.sql.SQLException;
-import modelo.ConexionBD;
+import java.sql.Types;
+
 /**
  *
  * @author ADMIN
  */
 public class AdminDAO {
-    private Connection conexion;
+
+    private final Connection conexion;
 
     public AdminDAO() {
         this.conexion = ConexionBD.getInstancia().getConnection();
     }
 
     public Integer validarAdmin(String correo, String password) {
-        String sql = "SELECT ID_ADMIN FROM ADMIN WHERE CORREO = ? AND PASSWORD = ?";
 
-        try (Connection conn = ConexionBD.getInstancia().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        final String sql = "{ call pr_validar_admin(?,?,?) }";
 
-            ps.setString(1, correo);
-            ps.setString(2, password);
-            ResultSet rs = ps.executeQuery();
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
 
-            if (rs.next()) {
-                return rs.getInt("ID_ADMIN"); // ✅ Retorna el ID si las credenciales son correctas
+            cs.setString(1, correo);
+            cs.setString(2, password);
+            cs.registerOutParameter(3, Types.INTEGER);
+
+            cs.execute();
+
+            int id = cs.getInt(3);
+            if (cs.wasNull()) {
+                return null; // no hubo coincidencia
             }
+            return id;
 
         } catch (SQLException e) {
-            System.err.println("Error al validar el administrador: " + e.getMessage());
+            System.err.println("Error al validar el administrador (pr_validar_admin): " + e.getMessage());
             e.printStackTrace();
+            return null;
         }
-
-        return null; // ❌ Retorna null si no hay coincidencia o el estado no es ACTIVO
     }
 }

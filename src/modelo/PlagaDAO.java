@@ -7,91 +7,21 @@ package modelo;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+
 /**
  *
  * @author ADMIN
  */
 public class PlagaDAO {
+
     private final Connection conexion;
 
     public PlagaDAO() {
         this.conexion = ConexionBD.getInstancia().getConnection();
     }
 
-    /* ===================== SECUENCIA ===================== */
-    /**
-     * Obtiene el siguiente id_plaga desde la secuencia Oracle seq_plaga.
-     */
-    public int siguienteIdPlaga() {
-        String sql = "SELECT seq_plaga.NEXTVAL FROM dual";
-        try (PreparedStatement ps = conexion.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-        } catch (SQLException e) {
-            System.err.println("Error obteniendo siguiente id_plaga: " + e.getMessage());
-        }
-        return -1; // valor de error
-    }
-
-    /* ===================== INSERTAR ===================== */
-    /**
-     * Inserta una nueva plaga usando la secuencia para id_plaga.
-     */
-    public boolean insertarPlaga(Plaga plaga) {
-        String sql = "INSERT INTO plagas (id_plaga, nombre_cientifica, nombre_comun, descripcion) "
-                   + "VALUES (?, ?, ?, ?)";
-
-        int nuevoId = siguienteIdPlaga();
-        if (nuevoId == -1) {
-            return false;
-        }
-
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, nuevoId);
-            ps.setString(2, plaga.getNombre_cientifico());
-            ps.setString(3, plaga.getNombre_comun());
-            ps.setString(4, plaga.getDescripcion());
-            int filas = ps.executeUpdate();
-
-            if (filas > 0) {
-                plaga.setId_plaga(nuevoId); // actualizar el objeto en memoria
-                return true;
-            }
-        } catch (SQLException e) {
-            System.err.println("Error insertando plaga: " + e.getMessage());
-        }
-        return false;
-    }
-
-    /* ===================== ACTUALIZAR ===================== */
-    /**
-     * Actualiza los datos de una plaga existente.
-     */
-    public boolean actualizarPlaga(Plaga plaga) {
-        String sql = "UPDATE plagas "
-                   + "SET nombre_cientifica = ?, "
-                   + "    nombre_comun = ?, "
-                   + "    descripcion = ? "
-                   + "WHERE id_plaga = ?";
-
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setString(1, plaga.getNombre_cientifico());
-            ps.setString(2, plaga.getNombre_comun());
-            ps.setString(3, plaga.getDescripcion());
-            ps.setInt(4, plaga.getId_plaga());
-
-            int filas = ps.executeUpdate();
-            return filas > 0;
-        } catch (SQLException e) {
-            System.err.println("Error actualizando plaga: " + e.getMessage());
-            return false;
-        }
-    }
-
     /* ===================== VALIDAR REFERENCIAS ===================== */
+
     /**
      * Verifica si la plaga está siendo usada en la tabla afectado.
      * Si COUNT(*) > 0 significa que está referenciada y NO se debería eliminar.
@@ -113,7 +43,71 @@ public class PlagaDAO {
         return false;
     }
 
-    /* ===================== ELIMINAR ===================== */
+    /* ===================== INSERTAR (SP + TRIGGER) ===================== */
+
+    /**
+     * Inserta una nueva plaga usando el procedimiento almacenado pr_insertar_plaga.
+     * El id_plaga se genera en la BD mediante fn_generar_plaga + tr_plaga_bi.
+     */
+    public boolean insertarPlaga(Plaga plaga) {
+        final String sql = "{ call pr_insertar_plaga(?,?,?,?) }";
+
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+
+            cs.setString(1, plaga.getNombre_cientifico());
+            cs.setString(2, plaga.getNombre_comun());
+
+            if (plaga.getDescripcion() != null && !plaga.getDescripcion().trim().isEmpty()) {
+                cs.setString(3, plaga.getDescripcion().trim());
+            } else {
+                cs.setNull(3, Types.VARCHAR);
+            }
+
+            cs.registerOutParameter(4, Types.INTEGER);
+
+            cs.execute();
+
+            int nuevoId = cs.getInt(4);
+            plaga.setId_plaga(nuevoId);
+            return true;
+
+        } catch (SQLException e) {
+            System.err.println("Error insertando plaga (pr_insertar_plaga): " + e.getMessage());
+            return false;
+        }
+    }
+
+    /* ===================== ACTUALIZAR (SP) ===================== */
+
+    /**
+     * Actualiza los datos de una plaga existente mediante pr_actualizar_plaga.
+     */
+    public boolean actualizarPlaga(Plaga plaga) {
+        final String sql = "{ call pr_actualizar_plaga(?,?,?,?) }";
+
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+
+            cs.setInt(1, plaga.getId_plaga());
+            cs.setString(2, plaga.getNombre_cientifico());
+            cs.setString(3, plaga.getNombre_comun());
+
+            if (plaga.getDescripcion() != null && !plaga.getDescripcion().trim().isEmpty()) {
+                cs.setString(4, plaga.getDescripcion().trim());
+            } else {
+                cs.setNull(4, Types.VARCHAR);
+            }
+
+            cs.execute();
+            return true;
+
+        } catch (SQLException e) {
+            System.err.println("Error actualizando plaga (pr_actualizar_plaga): " + e.getMessage());
+            return false;
+        }
+    }
+
+    /* ===================== ELIMINAR (SP) ===================== */
+
     /**
      * Elimina una plaga únicamente si no está referenciada en la tabla afectado.
      */
@@ -124,25 +118,32 @@ public class PlagaDAO {
             return false;
         }
 
-        String sql = "DELETE FROM plagas WHERE id_plaga = ?";
+        final String sql = "{ call pr_eliminar_plaga(?) }";
 
-        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
-            ps.setInt(1, idPlaga);
-            int filas = ps.executeUpdate();
-            return filas > 0;
+        try (CallableStatement cs = conexion.prepareCall(sql)) {
+            cs.setInt(1, idPlaga);
+            cs.execute();
+            return true;
+
+        } catch (SQLIntegrityConstraintViolationException fk) {
+            System.err.println("No se puede eliminar la plaga (ID " + idPlaga +
+                    "): está referenciada por otras tablas. " + fk.getMessage());
+            return false;
+
         } catch (SQLException e) {
-            System.err.println("Error eliminando plaga: " + e.getMessage());
+            System.err.println("Error eliminando plaga (pr_eliminar_plaga): " + e.getMessage());
             return false;
         }
     }
 
     /* ===================== OBTENER POR ID ===================== */
+
     /**
      * Obtiene una plaga por su ID.
      */
     public Plaga obtenerPlagaPorId(int idPlaga) {
-        String sql = "SELECT id_plaga, nombre_cientifica, nombre_comun, descripcion "
-                   + "FROM plagas WHERE id_plaga = ?";
+        String sql = "SELECT id_plaga, nombre_cientifica, nombre_comun, descripcion " +
+                     "FROM plagas WHERE id_plaga = ?";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql)) {
             ps.setInt(1, idPlaga);
@@ -163,13 +164,14 @@ public class PlagaDAO {
     }
 
     /* ===================== LISTAR TODAS ===================== */
+
     /**
      * Lista todas las plagas registradas.
      */
     public List<Plaga> listarPlagas() {
         List<Plaga> lista = new ArrayList<>();
-        String sql = "SELECT id_plaga, nombre_cientifica, nombre_comun, descripcion "
-                   + "FROM plagas ORDER BY id_plaga";
+        String sql = "SELECT id_plaga, nombre_cientifica, nombre_comun, descripcion " +
+                     "FROM plagas ORDER BY id_plaga";
 
         try (PreparedStatement ps = conexion.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
