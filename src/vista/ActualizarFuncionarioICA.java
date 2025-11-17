@@ -33,6 +33,7 @@ public class ActualizarFuncionarioICA extends javax.swing.JFrame {
             Runnable onFuncionarioActualizado) {
 
         initComponents();
+        setLocationRelativeTo(null);
 
         // Guardar el callback
         this.onFuncionarioActualizado = onFuncionarioActualizado;

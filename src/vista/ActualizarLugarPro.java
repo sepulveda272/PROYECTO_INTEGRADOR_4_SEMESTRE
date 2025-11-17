@@ -34,6 +34,7 @@ public class ActualizarLugarPro extends javax.swing.JFrame {
             Runnable onLugarProActualizado) {
 
         initComponents();
+        setLocationRelativeTo(null);
 
         // Guardar callback para refrescar tabla al actualizar
         this.onLugarProActualizado = onLugarProActualizado;

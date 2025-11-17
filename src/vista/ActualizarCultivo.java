@@ -27,6 +27,7 @@ public class ActualizarCultivo extends javax.swing.JFrame {
             Runnable onCultivoActualizado) {
 
         initComponents();
+        setLocationRelativeTo(null);
 
         // Guardar el callback
         this.onCultivoActualizado = onCultivoActualizado;

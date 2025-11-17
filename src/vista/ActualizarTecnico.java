@@ -34,6 +34,7 @@ public ActualizarTecnico(
         Runnable onTecnicoActualizado) {
 
     initComponents();
+    setLocationRelativeTo(null);
 
     // Guardar el callback
     this.onTecnicoActualizado = onTecnicoActualizado;

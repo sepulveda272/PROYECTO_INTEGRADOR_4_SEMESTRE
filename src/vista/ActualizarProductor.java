@@ -34,6 +34,7 @@ public ActualizarProductor(
         Runnable onProductorActualizado) {
 
     initComponents();
+    setLocationRelativeTo(null);
 
     // Guardar el callback
     this.onProductorActualizado = onProductorActualizado;

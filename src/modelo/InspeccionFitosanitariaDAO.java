@@ -267,23 +267,4 @@ public class InspeccionFitosanitariaDAO {
             );
         }
     }
-
-    /* ===================== HELPERS INCIDENCIA / NIVEL (para la UI) ===================== */
-
-    public double calcularIncidencia(int revisadas, int afectadas) {
-        if (revisadas <= 0) return 0.0;            // evita división por cero
-        if (afectadas < 0) afectadas = 0;
-        if (afectadas > revisadas) afectadas = revisadas;
-        return (afectadas * 100.0) / revisadas;    // porcentaje
-    }
-
-    public String calcularNivelPorIncidencia(double inc) {
-        if (inc == 0.0)                  return "Sin incidencia";
-        else if (inc > 0 && inc <= 5)    return "Muy baja";
-        else if (inc > 5 && inc <= 10)   return "Baja";
-        else if (inc > 10 && inc <= 20)  return "Moderada";
-        else if (inc > 20 && inc <= 40)  return "Alta";
-        else if (inc > 40 && inc <= 60)  return "Muy alta";
-        else                             return "Critica"; // >60
-    }
 }

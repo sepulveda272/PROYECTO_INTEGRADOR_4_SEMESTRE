@@ -4,18 +4,26 @@
  */
 package controlador;
 
-import java.util.List;
 import modelo.InspeccionFitosanitaria;
 import modelo.InspeccionFitosanitariaDAO;
+import modelo.ReporteDAO;
+import modelo.ReporteInspeccionDTO;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.sql.SQLException;
+
 /**
  *
  * @author ADMIN
  */
 public class InspeccionFitosanitariaController {
     private final InspeccionFitosanitariaDAO inspeccionDAO;
+    private final ReporteDAO reporteDAO;
 
     public InspeccionFitosanitariaController() {
         this.inspeccionDAO = new InspeccionFitosanitariaDAO();
+        this.reporteDAO = new ReporteDAO();
     }
 
     private String validar(Integer revisadas, Integer afectadas,
@@ -90,4 +98,30 @@ public class InspeccionFitosanitariaController {
 
         return error;
     }
+    public List<ReporteInspeccionDTO> listarHistorialReporte(
+            Integer idProductor,
+            Integer idPredio,
+            Integer idCultivo,
+            Integer idPlaga,
+            Integer idTecnico,
+            LocalDate fechaDesde,
+            LocalDate fechaHasta
+    ) {
+        try {
+            return reporteDAO.listarHistorial(
+                    idProductor,
+                    idPredio,
+                    idCultivo,
+                    idPlaga,
+                    idTecnico,
+                    fechaDesde,
+                    fechaHasta
+            );
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // En caso de error devolvemos lista vacía para que la vista lo maneje
+            return new ArrayList<>();
+        }
+    }
+
 }

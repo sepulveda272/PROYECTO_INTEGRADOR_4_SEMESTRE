@@ -39,6 +39,7 @@ public class ActualizarPredio extends javax.swing.JFrame {
             Runnable onPredioActualizado) {
 
         initComponents();
+        setLocationRelativeTo(null);
 
         // Guardar callback para refrescar tabla
         this.onPredioActualizado = onPredioActualizado;
