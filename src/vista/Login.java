@@ -6,6 +6,7 @@ package vista;
 
 import controlador.Logincontroller;
 import javax.swing.JOptionPane;
+import modelo.ConexionBD;
 
 /**
  *
@@ -147,39 +148,71 @@ public class Login extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        String correo = jTextField1.getText();
+        String correo = jTextField1.getText().trim();
         String contraseña = new String(jPasswordField1.getPassword());
 
-        // Autenticar y obtener el ID del productor
-        Logincontroller controlador = new Logincontroller();
+        // Productor
         Integer idProductor = controlador.autenticarProductor(correo, contraseña);
-        Integer numero_registro = controlador.autenticarTecnico(correo, contraseña);
-        Integer idFuncionario = controlador.autenticarFuncionario(correo, contraseña);
-        Integer idAdmin = controlador.autenticarAdmin(correo, contraseña);
+        if (idProductor != null) {
+            JOptionPane.showMessageDialog(this, "✅ Bienvenido Productor");
 
-        if (idProductor != null || numero_registro != null || idFuncionario != null || idAdmin != null) {
-            JOptionPane.showMessageDialog(this, "✅ Login exitoso. ¡Bienvenido!");
+            // Cambias conexión a PRODUCTOR_APP (si ya estás usando reconfigurar)
+            ConexionBD.reconfigurar("PRODUCTOR_APP", "productor123");
 
-            // Pasar el ID del productor a la siguiente vista (por ejemplo, Tabla)
-            new Opciones().setVisible(true);
-            this.dispose(); // Cierra la ventana de Login
-        } else {
-            JOptionPane.showMessageDialog(this, "❌ Usuario o contraseña incorrectos o inactivos.");
+            new Opciones("PRODUCTOR").setVisible(true);
+            this.dispose();
+            return;
         }
-    }
 
+        // Técnico
+        Integer numero_registro = controlador.autenticarTecnico(correo, contraseña);
+        if (numero_registro != null) {
+            JOptionPane.showMessageDialog(this, "✅ Bienvenido Técnico Oficial");
+
+            ConexionBD.reconfigurar("TECNICO_APP", "tecnico123");
+
+            new Opciones("TECNICO").setVisible(true);
+            this.dispose();
+            return;
+        }
+
+        // Funcionario ICA
+        Integer idFuncionario = controlador.autenticarFuncionario(correo, contraseña);
+        if (idFuncionario != null) {
+            JOptionPane.showMessageDialog(this, "✅ Bienvenido Funcionario ICA");
+
+            ConexionBD.reconfigurar("FUNCIONARIO_ICA_APP", "funcica123");
+
+            new Opciones("FUNCIONARIO_ICA").setVisible(true);
+            this.dispose();
+            return;
+        }
+
+        // Admin
+        Integer idAdmin = controlador.autenticarAdmin(correo, contraseña);
+        if (idAdmin != null) {
+            JOptionPane.showMessageDialog(this, "✅ Bienvenido Administrador");
+
+            ConexionBD.reconfigurar("ADMIN_APP", "admin123");
+
+            new Opciones("ADMIN").setVisible(true);
+            this.dispose();
+            return;
+        }
+
+        JOptionPane.showMessageDialog(this,"❌ Usuario o contraseña incorrectos o inactivos.");
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new Login().setVisible(true);
             }
         });
-        
-    }//GEN-LAST:event_jButton1ActionPerformed
-
-    /**
-     * @param args the command line arguments
-     */
+    }
  
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

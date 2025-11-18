@@ -10,42 +10,62 @@ import java.util.logging.Logger;
 public class ConexionBD {
     private static ConexionBD instancia;
     private Connection connection = null;
-    
-    private final String url = "jdbc:oracle:thin:@localhost:1521:XE"; //jdbc:oracle:thin:@192.168.254.215:1521:orcl
-    private final String user = "proyectointe";
-    private final String password = "proyectointe";
+
+    private final String url = "jdbc:oracle:thin:@localhost:1521:XE";
+
+    // AHORA user y password ya no son final
+    private String user;
+    private String password;
 
     // Constructor privado para Singleton
-    private ConexionBD() {
+    private ConexionBD(String user, String password) {
+        this.user = user;
+        this.password = password;
         conectar();
     }
 
-    // Método para conectar a la base de datos
+    // Conecta con las credenciales actuales
     private void conectar() {
         try {
             connection = DriverManager.getConnection(url, user, password);
             if (connection != null) {
                 DatabaseMetaData meta = connection.getMetaData();
-                System.out.println("Conexión establecida: " + meta.getDriverName());
+                System.out.println("Conexión establecida como " + user +
+                                   " - Driver: " + meta.getDriverName());
             }
         } catch (SQLException ex) {
-            System.out.println("Error de conexión: " + ex.getMessage());
+            System.out.println("Error de conexión con " + user + ": " + ex.getMessage());
         }
     }
 
-    // Obtener instancia única (patrón Singleton)
+    // Instancia por defecto (por ejemplo con el dueño de las tablas)
     public static ConexionBD getInstancia() {
         if (instancia == null) {
-            instancia = new ConexionBD();
+            // Usuario “general” para iniciar la app (por ejemplo APP_OWNER o PROYECTOINTE)
+            instancia = new ConexionBD("PROYECTOINTE", "proyectointe");
         }
         return instancia;
+    }
+
+    // 🔴 NUEVO: reconfigurar el Singleton con otro usuario (según el rol)
+    public static void reconfigurar(String user, String password) {
+        try {
+            if (instancia != null && instancia.connection != null && !instancia.connection.isClosed()) {
+                instancia.connection.close();
+                System.out.println("Conexión anterior cerrada.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        instancia = new ConexionBD(user, password);
     }
 
     // Obtener conexión
     public Connection getConnection() {
         try {
             if (connection == null || connection.isClosed()) {
-                System.out.println("Conexión cerrada. Intentando reconectar...");
+                System.out.println("Conexión cerrada. Intentando reconectar como " + user + "...");
                 conectar();
             }
         } catch (SQLException e) {
@@ -54,7 +74,7 @@ public class ConexionBD {
         return connection;
     }
 
-    // Cerrar la conexión
+    // Cerrar (si quieres hacerlo al salir de la app)
     public void closeConnection() {
         try {
             if (connection != null && !connection.isClosed()) {

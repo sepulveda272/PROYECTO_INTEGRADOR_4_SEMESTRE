@@ -16,12 +16,15 @@ import java.util.List;
  */
 class TablaObservaciones extends javax.swing.JFrame {
     private ObservacionesController observacionesController;
+    
+    private String rol;
 
-    public TablaObservaciones() {
+    public TablaObservaciones(String rol) {
         initComponents();
         observacionesController = new ObservacionesController();
         setLocationRelativeTo(null);
         cargarObservaciones();
+        this.rol = rol;
     }
 
     private void cargarObservaciones() {
@@ -192,7 +195,7 @@ class TablaObservaciones extends javax.swing.JFrame {
 
     private void volverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_volverActionPerformed
         // TODO add your handling code here:
-        Opciones opciones = new Opciones();
+        Opciones opciones = new Opciones(rol);  // ⬅ volvemos con el mismo rol
         opciones.setVisible(true);
         dispose();
     }//GEN-LAST:event_volverActionPerformed
@@ -242,7 +245,7 @@ class TablaObservaciones extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new TablaObservaciones().setVisible(true);
+                new TablaObservaciones("ADMIN").setVisible(true);
             }
         });
     }

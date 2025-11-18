@@ -15,16 +15,16 @@ import modelo.Productor;
  * @author ESTUDIANTE
  */
 class Tabla extends javax.swing.JFrame {
-     private ProductorController productorController;
-     //private int idProductor;
-    /**
-     * Creates new form Tabla
-     */
-    public Tabla(/*int idProductor*/) {
+    private ProductorController productorController;
+    
+    private String rol;
+    
+    public Tabla(String rol) {
         initComponents();
         productorController = new ProductorController();
         setLocationRelativeTo(null);
         cargarProductores();
+        this.rol = rol;
     }
     
      private void cargarProductores() {
@@ -203,8 +203,7 @@ class Tabla extends javax.swing.JFrame {
     }//GEN-LAST:event_botoneliminarActionPerformed
 
     private void volverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_volverActionPerformed
-        // TODO add your handling code here:
-        Opciones opciones = new Opciones();
+        Opciones opciones = new Opciones(rol);  // ⬅ volvemos con el mismo rol
         opciones.setVisible(true);
         dispose();
     }//GEN-LAST:event_volverActionPerformed
@@ -239,7 +238,7 @@ class Tabla extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Tabla().setVisible(true);
+                new Tabla("ADMIN").setVisible(true);
             }
         });
     }

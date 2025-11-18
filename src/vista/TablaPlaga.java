@@ -15,18 +15,18 @@ import modelo.Plaga;
  * @author ESTUDIANTE
  */
 class TablaPlaga extends javax.swing.JFrame {
-     private PlagaController plagaController;
-     //private int idProductor;
+    private PlagaController plagaController;
     /**
      * Creates new form Tabla
      */
-    public TablaPlaga(/*int idProductor*/) {
+    private String rol;
+    
+    public TablaPlaga(String rol) {
         initComponents();
         plagaController = new PlagaController();
         setLocationRelativeTo(null);
-        /*this.idProductor = idProductor;
-        System.out.println(idProductor);*/
         cargarPlaga();
+        this.rol = rol;
     }
     
      private void cargarPlaga() {
@@ -185,7 +185,7 @@ class TablaPlaga extends javax.swing.JFrame {
 
     private void volverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_volverActionPerformed
         // TODO add your handling code here:
-        Opciones opciones = new Opciones();
+        Opciones opciones = new Opciones(rol);  // ⬅ volvemos con el mismo rol
         opciones.setVisible(true);
         dispose();
     }//GEN-LAST:event_volverActionPerformed
@@ -221,7 +221,7 @@ class TablaPlaga extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new TablaPlaga().setVisible(true);
+                new TablaPlaga("ADMIN").setVisible(true);
             }
         });
     }

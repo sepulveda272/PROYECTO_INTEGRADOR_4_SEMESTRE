@@ -16,12 +16,15 @@ import modelo.LugarProduccion;
  */
 class TablaLugarPr extends javax.swing.JFrame {
     private LugarProduccionController lugarProduccionController;
+    
+    private String rol;
 
-    public TablaLugarPr() {
+    public TablaLugarPr(String rol) {
         initComponents();
         setLocationRelativeTo(null);
         lugarProduccionController = new LugarProduccionController();
         cargarLugaresPr();
+        this.rol = rol;
     }
     
      private void cargarLugaresPr() {
@@ -190,7 +193,7 @@ class TablaLugarPr extends javax.swing.JFrame {
 
     private void volverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_volverActionPerformed
         // TODO add your handling code here:
-        Opciones opciones = new Opciones();
+        Opciones opciones = new Opciones(rol);  // ⬅ volvemos con el mismo rol
         opciones.setVisible(true);
         dispose();
     }//GEN-LAST:event_volverActionPerformed
@@ -226,7 +229,7 @@ class TablaLugarPr extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new TablaLugarPr().setVisible(true);
+                new TablaLugarPr("ADMIN").setVisible(true);
             }
         });
     }

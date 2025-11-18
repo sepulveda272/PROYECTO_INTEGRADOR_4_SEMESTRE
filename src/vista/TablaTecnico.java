@@ -16,15 +16,15 @@ import modelo.TecnicoOficial;
  */
 class TablaTecnico extends javax.swing.JFrame {
     private TecnicoOficialController tecnicoOficialController;
-     //private int idProductor;
-    /**
-     * Creates new form Tabla
-     */
-    public TablaTecnico(/*int idProductor*/) {
+    
+    private String rol;
+    
+    public TablaTecnico(String rol) {
         initComponents();
         tecnicoOficialController = new TecnicoOficialController();
         setLocationRelativeTo(null);
         cargarTecnicos();
+        this.rol = rol;
     }
     
      private void cargarTecnicos() {
@@ -208,7 +208,7 @@ class TablaTecnico extends javax.swing.JFrame {
 
     private void volverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_volverActionPerformed
         // TODO add your handling code here:
-        Opciones opciones = new Opciones();
+        Opciones opciones = new Opciones(rol);  // ⬅ volvemos con el mismo rol
         opciones.setVisible(true);
         dispose();
     }//GEN-LAST:event_volverActionPerformed
@@ -243,7 +243,7 @@ class TablaTecnico extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new TablaTecnico().setVisible(true);
+                new TablaTecnico("ADMIN").setVisible(true);
             }
         });
     }

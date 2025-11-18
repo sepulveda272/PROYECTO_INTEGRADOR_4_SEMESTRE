@@ -16,15 +16,15 @@ import modelo.Predio;
  */
 class TablaPredio extends javax.swing.JFrame {
      private PredioController predioController;
-     //private int idProductor;
-    /**
-     * Creates new form Tabla
-     */
-    public TablaPredio(/*int idProductor*/) {
+     
+     private String rol;
+     
+    public TablaPredio(String rol) {
         initComponents();
         setLocationRelativeTo(null);
         predioController = new PredioController();
         cargarPredio();
+        this.rol = rol;
     }
     
     private void cargarPredio() {
@@ -211,7 +211,7 @@ class TablaPredio extends javax.swing.JFrame {
 
     private void volverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_volverActionPerformed
         // TODO add your handling code here:
-        Opciones opciones = new Opciones();
+        Opciones opciones = new Opciones(rol);  // ⬅ volvemos con el mismo rol
         opciones.setVisible(true);
         dispose();
     }//GEN-LAST:event_volverActionPerformed
@@ -249,7 +249,7 @@ class TablaPredio extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new TablaPredio().setVisible(true);
+                new TablaPredio("ADMIN").setVisible(true);
             }
         });
     }

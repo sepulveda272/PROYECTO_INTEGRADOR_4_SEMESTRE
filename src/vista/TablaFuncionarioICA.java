@@ -16,12 +16,15 @@ import modelo.FuncionarioICA;
  */
 class TablaFuncionarioICA extends javax.swing.JFrame {
     private FuncionarioICAController funcionarioICAController;
+    
+    private String rol;
 
-    public TablaFuncionarioICA() {
+    public TablaFuncionarioICA(String rol) {
         initComponents();
         setLocationRelativeTo(null);
         funcionarioICAController = new FuncionarioICAController();
         cargarFuncionarios();
+        this.rol = rol;
     }
     
      private void cargarFuncionarios() {
@@ -199,7 +202,7 @@ class TablaFuncionarioICA extends javax.swing.JFrame {
 
     private void volverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_volverActionPerformed
         // TODO add your handling code here:
-        Opciones opciones = new Opciones();
+        Opciones opciones = new Opciones(rol);  // ⬅ volvemos con el mismo rol
         opciones.setVisible(true);
         dispose();
     }//GEN-LAST:event_volverActionPerformed
@@ -235,7 +238,7 @@ class TablaFuncionarioICA extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new TablaFuncionarioICA().setVisible(true);
+                new TablaFuncionarioICA("ADMIN").setVisible(true);
             }
         });
     }

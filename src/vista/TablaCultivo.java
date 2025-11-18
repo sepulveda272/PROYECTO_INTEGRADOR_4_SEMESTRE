@@ -17,11 +17,14 @@ import modelo.Cultivo;
 class TablaCultivo extends javax.swing.JFrame {
     private CultivoController cultivoController;
 
-    public TablaCultivo() {
+    private String rol;
+    
+    public TablaCultivo(String rol) {
         initComponents();
         cultivoController = new CultivoController();
         setLocationRelativeTo(null);
         cargarCultivos();
+        this.rol = rol;
     }
     
      private void cargarCultivos() {
@@ -184,7 +187,7 @@ class TablaCultivo extends javax.swing.JFrame {
 
     private void volverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_volverActionPerformed
         // TODO add your handling code here:
-        Opciones opciones = new Opciones();
+        Opciones opciones = new Opciones(rol);  // ⬅ volvemos con el mismo rol
         opciones.setVisible(true);
         dispose();
     }//GEN-LAST:event_volverActionPerformed
@@ -220,7 +223,7 @@ class TablaCultivo extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new TablaCultivo().setVisible(true);
+                new TablaCultivo("ADMIN").setVisible(true);
             }
         });
     }

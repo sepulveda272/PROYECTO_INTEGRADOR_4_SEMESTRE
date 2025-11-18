@@ -17,11 +17,14 @@ import java.util.List;
 class TablaLote extends javax.swing.JFrame {
     private LoteController loteController;
 
-    public TablaLote() {
+    private String rol;
+    
+    public TablaLote(String rol) {
         initComponents();
         loteController = new LoteController();
         setLocationRelativeTo(null);
         cargarLotes();
+        this.rol = rol;
     }
     
      private void cargarLotes() {
@@ -190,7 +193,7 @@ class TablaLote extends javax.swing.JFrame {
 
     private void volverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_volverActionPerformed
         // TODO add your handling code here:
-        Opciones opciones = new Opciones();
+        Opciones opciones = new Opciones(rol);  // ⬅ volvemos con el mismo rol
         opciones.setVisible(true);
         dispose();
     }//GEN-LAST:event_volverActionPerformed
@@ -228,7 +231,7 @@ class TablaLote extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new TablaLote().setVisible(true);
+                new TablaLote("ADMIN").setVisible(true);  // pasa un rol cualquiera
             }
         });
     }

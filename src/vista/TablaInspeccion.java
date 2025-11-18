@@ -30,12 +30,15 @@ class TablaInspeccion extends javax.swing.JFrame {
     private InspeccionFitosanitariaController inspeccionFitosanitariaController;
     
     private List<ReporteInspeccionDTO> listaReporte = new ArrayList<>();
+    
+    private String rol;
 
-    public TablaInspeccion() {
+    public TablaInspeccion(String rol) {
         initComponents();
         inspeccionFitosanitariaController = new InspeccionFitosanitariaController();
         setLocationRelativeTo(null);
         cargarInspecciones();
+        this.rol = rol;
     }
     
     private void descargarInformeTxt() {
@@ -666,7 +669,7 @@ class TablaInspeccion extends javax.swing.JFrame {
 
     private void volverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_volverActionPerformed
         // TODO add your handling code here:
-        Opciones opciones = new Opciones();
+        Opciones opciones = new Opciones(rol);  // ⬅ volvemos con el mismo rol
         opciones.setVisible(true);
         dispose();
     }//GEN-LAST:event_volverActionPerformed
@@ -708,7 +711,7 @@ class TablaInspeccion extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new TablaInspeccion().setVisible(true);
+                new TablaInspeccion("ADMIN").setVisible(true);
             }
         });
     }
