@@ -325,7 +325,7 @@ public class Opciones extends JFrame {
         SwingUtilities.invokeLater(() -> {
             // Cambia el rol aquí para probar diferentes vistas:
             // "ADMIN", "TECNICO", "PRODUCTOR", "FUNCIONARIO_ICA"
-            new Opciones("FUNCIONARIO_ICA").setVisible(true);
+            new Opciones("ADMIN").setVisible(true);
         });
     }
 }

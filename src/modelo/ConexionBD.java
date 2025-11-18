@@ -11,7 +11,7 @@ public class ConexionBD {
     private static ConexionBD instancia;
     private Connection connection = null;
 
-    private final String url = "jdbc:oracle:thin:@localhost:1521:XE";
+    private final String url = "jdbc:oracle:thin:@localhost:1521:XE";  //jdbc:oracle:thin:@192.168.254.215:1521:orcl
 
     // AHORA user y password ya no son final
     private String user;

@@ -571,9 +571,9 @@ class TablaInspeccion extends javax.swing.JFrame {
         String fecha      = String.valueOf(jTable1.getModel().getValueAt(row, 1));
         int revisadas     = Integer.parseInt(jTable1.getModel().getValueAt(row, 2).toString());
         int afectadas     = Integer.parseInt(jTable1.getModel().getValueAt(row, 3).toString());
-        String nivel      = String.valueOf(jTable1.getModel().getValueAt(row, 5)); // solo informativo
-        int numeroLote    = Integer.parseInt(jTable1.getModel().getValueAt(row, 6).toString());
-        String nombreTec  = String.valueOf(jTable1.getModel().getValueAt(row, 7));
+        String nivel      = String.valueOf(jTable1.getModel().getValueAt(row, 4)); // solo informativo
+        int numeroLote    = Integer.parseInt(jTable1.getModel().getValueAt(row, 5).toString());
+        String nombreTec  = String.valueOf(jTable1.getModel().getValueAt(row, 6));
 
          ActualizarInspeccion actualizar = new ActualizarInspeccion(
             id, revisadas, afectadas, fecha, numeroLote, /* idTecnico: lo resolvemos por combo */ 0,
